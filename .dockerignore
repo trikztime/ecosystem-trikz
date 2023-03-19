@@ -1,0 +1,23 @@
+# Configs
+**/.vscode
+**/.eslintrc.js
+**/.prettierrc
+**/.editorconfig
+**/.gitignore
+**/.dockerignore
+
+# Data
+@db-store
+
+# Git
+.git
+
+# Build dependencies
+**/dist
+**/node_modules
+
+# Environment (contains sensitive data)
+**/*.env*
+
+# Misc
+**/README.md

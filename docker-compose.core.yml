@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  # https://hub.docker.com/_/mariadb
+  db:
+    image: mariadb:10.3.9
+    container_name: mariadb
+    restart: always
+    command: --max_allowed_packet=32000000 --wait_timeout=28800
+    environment:
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+    volumes:
+      - ./@db-store:/var/lib/mysql
+      - ./@db-scripts:/docker-entrypoint-initdb.d/:ro
+    ports:
+      - "3306:3306"
+
+  # https://hub.docker.com/_/phpmyadmin
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      - PMA_ARBITRARY=1
+      - UPLOAD_LIMIT=300M

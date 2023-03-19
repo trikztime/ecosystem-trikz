@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  api:
+    container_name: api
+    build:
+      context: ./services/api
+      target: production
+    env_file:
+      - ./@env/main.env
+    restart: on-failure
+    command: npm run start:prod
+
+  skillrank:
+    container_name: skillrank
+    build:
+      context: ./services/skillrank
+      target: production
+    env_file:
+      - ./@env/main.env
+    restart: on-failure
+    command: npm run start:prod

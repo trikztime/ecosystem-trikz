@@ -1,0 +1,19 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("SKILLRANK_DATABASE_URL")
+}
+
+model SkillRank {
+  auth   Int
+  map    String @db.VarChar(128)
+  style  Int    @db.TinyInt
+  points Int    @default(0)
+
+  @@unique([auth, map, style], map: "index_[skillrank/auth/map/style]")
+  @@map("skillrank")
+}

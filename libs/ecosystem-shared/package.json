@@ -1,0 +1,31 @@
+{
+  "name": "@trikztime/ecosystem-shared",
+  "version": "1.0.12",
+  "description": "",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "prepublish": "tsc",
+    "copypackage": "cp -rf ./package.json ./dist/package.json",
+    "build": "rm -rf dist/ && tsc && npm run copypackage",
+    "publish-build": "rm -rf dist/ && tsc",
+    "publish-package": "npm run publish-build && npm run copypackage && cd dist && npm publish"
+  },
+  "author": "not-log",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^18.14.1",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "eslint": "^8.0.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-simple-import-sort": "^10.0.0",
+    "prettier": "^2.3.2",
+    "typescript": "^4.9.5"
+  },
+  "dependencies": {
+    "@nestjs/common": "^9.3.10",
+    "@nestjs/microservices": "^9.3.10"
+  }
+}

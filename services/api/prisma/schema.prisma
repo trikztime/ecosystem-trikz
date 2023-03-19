@@ -1,0 +1,106 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("API_DATABASE_URL")
+}
+
+model User {
+  auth      Int     @id
+  name      String? @db.VarChar(128)
+  ip        Int?
+  lastlogin Int     @default(-1)
+  points    Float   @default(0) @db.Float
+
+  experience            Experience?
+  playertimesByUser1    Playertime[]    @relation("PlayertimesByUser1")
+  playertimesByUser2    Playertime[]    @relation("PlayertimesByUser2")
+  logPlayertimesByUser1 LogPlayertime[] @relation("LogPlayertimesByUser1")
+  logPlayertimesByUser2 LogPlayertime[] @relation("LogPlayertimesByUser2")
+
+  @@index([lastlogin], map: "index_[user/lastlogin]")
+  @@index([points], map: "index_[user/points]")
+  @@map("users")
+}
+
+model Playertime {
+  id          Int     @id @default(autoincrement())
+  auth        Int?
+  auth2       Int?    @default(0)
+  map         String? @db.VarChar(128)
+  time        Float?
+  jumps       Int?
+  style       Int?    @db.TinyInt
+  date        Int?
+  points      Float   @default(0) @db.Float
+  track       Int     @default(0) @db.TinyInt
+  completions Int?    @default(0) @db.SmallInt
+
+  user1 User? @relation(name: "PlayertimesByUser1", fields: [auth], references: [auth], onDelete: Cascade, map: "fk_[playertimes/auth]_[users/auth]")
+  user2 User? @relation(name: "PlayertimesByUser2", fields: [auth2], references: [auth], onDelete: Cascade, map: "fk_[playertimes/auth2]_[users/auth]")
+
+  @@index([auth, date, points], map: "index_[playertimes/[auth/auth2/date/points]]")
+  @@index([map, style, track, time], map: "index_[playertimes/[map/style/track/time]]")
+  @@index([time], map: "time")
+  @@map("playertimes")
+}
+
+model LogPlayertime {
+  id    Int     @id @default(autoincrement())
+  auth  Int?
+  auth2 Int?    @default(0)
+  map   String? @db.VarChar(128)
+  track Int?    @db.TinyInt
+  style Int?    @db.TinyInt
+  date  Int?
+  jumps Int?
+  time  Float?
+
+  user1 User? @relation(name: "LogPlayertimesByUser1", fields: [auth], references: [auth], onDelete: Cascade, map: "fk_[log_playertimes/auth]_[users/auth]")
+  user2 User? @relation(name: "LogPlayertimesByUser2", fields: [auth2], references: [auth], onDelete: Cascade, map: "fk_[log_playertimes/auth2]_[users/auth]")
+
+  @@index([date], map: "index_[log_playertimes/date]")
+  @@index([auth], map: "index_[log_playertimes/auth]")
+  @@index([auth2], map: "index_[log_playertimes/auth2]")
+  @@map("log_playertimes")
+}
+
+model Experience {
+  auth Int @id @default(0)
+  exp  Int @default(0)
+
+  users User @relation(fields: [auth], references: [auth], onDelete: Cascade, map: "fk_[experience/auth]_[users/auth]")
+
+  @@map("experience")
+}
+
+model Map {
+  map        String @id @db.VarChar(128)
+  expPoints  Int    @default(0) @map("exp_points")
+  tier       Int    @default(0) @db.TinyInt
+  basePoints Int    @default(0) @map("base_points")
+
+  @@map("maplist")
+}
+
+model Mapzone {
+  id            Int     @id @default(autoincrement())
+  map           String? @db.VarChar(128)
+  type          Int?
+  corner1_x     Float?  @db.Float
+  corner1_y     Float?  @db.Float
+  corner1_z     Float?  @db.Float
+  corner2_x     Float?  @db.Float
+  corner2_y     Float?  @db.Float
+  corner2_z     Float?  @db.Float
+  destination_x Float   @default(0) @db.Float
+  destination_y Float   @default(0) @db.Float
+  destination_z Float   @default(0) @db.Float
+  track         Int     @default(0)
+  flags         Int     @default(0)
+
+  @@map("mapzones")
+}
