@@ -1,8 +1,14 @@
+export type DatabaseConfig = {
+  databaseUrl: string;
+};
+
+export type CommonMicroserviceConfig = {
+  microserviceToken: string;
+  microserviceHost?: string;
+  microservicePort: number;
+};
+
 export interface IEcosystemConfig {
-  api: {
-    databaseUrl: string;
-  };
-  skillrank: {
-    databaseUrl: string;
-  };
+  api: CommonMicroserviceConfig & DatabaseConfig;
+  skillrank: CommonMicroserviceConfig & DatabaseConfig;
 }

@@ -1,23 +1,25 @@
 import { Module } from "@nestjs/common/";
 import { ClientsModule, Transport } from "@nestjs/microservices";
 
-import { serviceConfig } from "../../const";
+import { configService } from "../../config";
+
+const config = configService.config;
 
 const registeredClientsModule = ClientsModule.register([
   {
-    name: serviceConfig.api.token,
+    name: config?.api.microserviceToken ?? "api",
     transport: Transport.TCP,
     options: {
-      host: serviceConfig.api.host,
-      port: serviceConfig.api.port,
+      host: config?.api.microserviceHost,
+      port: config?.api.microservicePort,
     },
   },
   {
-    name: serviceConfig.skillrank.token,
+    name: config?.skillrank.microserviceToken ?? "skillrank",
     transport: Transport.TCP,
     options: {
-      host: serviceConfig.skillrank.host,
-      port: serviceConfig.skillrank.port,
+      host: config?.skillrank.microserviceHost,
+      port: config?.skillrank.microservicePort,
     },
   },
 ]);

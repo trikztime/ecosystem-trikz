@@ -1,19 +1,19 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
+import { configService } from "@trikztime/ecosystem-shared/config";
 import {
   API_GET_MAP_BY_NAME_CMD,
   API_GET_MAPS_CMD,
   API_GET_RECORDS_CMD,
   ApiGetMapByNameMessagePayload,
   ApiGetRecordsMessagePayload,
-  serviceConfig,
 } from "@trikztime/ecosystem-shared/const";
 import { MapDTO, RecordDTO } from "@trikztime/ecosystem-shared/dto";
 import { lastValueFrom } from "rxjs";
 
 @Injectable()
 export class ApiService {
-  constructor(@Inject(serviceConfig.api.token) private apiServiceClient: ClientProxy) {}
+  constructor(@Inject(configService.config?.api.microserviceToken) private apiServiceClient: ClientProxy) {}
 
   async healthCheck() {
     return true;

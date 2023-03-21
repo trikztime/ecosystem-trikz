@@ -6,6 +6,12 @@
 # env files
 *.env*
 
+# корневые конфиги
+@config
+!@config/README.md
+# конфиги при сборке сервисов
+**/src/config/config.json
+
 # compiled output
 dist
 node_modules
