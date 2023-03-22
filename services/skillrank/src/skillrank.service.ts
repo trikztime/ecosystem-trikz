@@ -1,12 +1,12 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
+import { configService } from "@trikztime/ecosystem-shared/config";
 import {
   API_GET_MAP_BY_NAME_CMD,
   API_GET_MAPS_CMD,
   API_GET_RECORDS_CMD,
   ApiGetMapByNameMessagePayload,
   ApiGetRecordsMessagePayload,
-  serviceConfig,
   StyleCodes,
   TrackCodes,
 } from "@trikztime/ecosystem-shared/const";
@@ -29,7 +29,7 @@ const skillrankQueue = new EventQueue<true | null>();
 @Injectable()
 export class SkillrankService {
   constructor(
-    @Inject(serviceConfig.api.token) private apiServiceClient: ClientProxy,
+    @Inject(configService.config?.api.serviceToken) private apiServiceClient: ClientProxy,
     private prismaService: PrismaService,
   ) {}
 

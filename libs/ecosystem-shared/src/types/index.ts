@@ -1,9 +1,3 @@
-export interface IServiceConfig {
-  token: string;
-  host?: string;
-  port?: number;
-}
-
 export type ResponseResult = "ok" | "error";
 
 export interface ICommonResponse<T> {

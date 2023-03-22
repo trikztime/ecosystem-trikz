@@ -1,7 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
+import { configService } from "@trikztime/ecosystem-shared/config";
 import {
-  serviceConfig,
   SKILLRANK_RECALCULATE_ALL_CMD,
   SKILLRANK_RECALCULATE_MAP_CMD,
   SkillrankRecalculateMapPayload,
@@ -10,7 +10,7 @@ import { lastValueFrom } from "rxjs";
 
 @Injectable()
 export class SkillrankService {
-  constructor(@Inject(serviceConfig.skillrank.token) private skillrankServiceClient: ClientProxy) {}
+  constructor(@Inject(configService.config?.skillrank.serviceToken) private skillrankServiceClient: ClientProxy) {}
 
   async healthCheck() {
     return true;
