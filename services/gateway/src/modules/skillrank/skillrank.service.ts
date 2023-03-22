@@ -10,7 +10,7 @@ import { lastValueFrom } from "rxjs";
 
 @Injectable()
 export class SkillrankService {
-  constructor(@Inject(configService.config?.skillrank.microserviceToken) private skillrankServiceClient: ClientProxy) {}
+  constructor(@Inject(configService.config?.skillrank.serviceToken) private skillrankServiceClient: ClientProxy) {}
 
   async healthCheck() {
     return true;

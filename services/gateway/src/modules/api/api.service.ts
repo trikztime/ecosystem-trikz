@@ -13,7 +13,7 @@ import { lastValueFrom } from "rxjs";
 
 @Injectable()
 export class ApiService {
-  constructor(@Inject(configService.config?.api.microserviceToken) private apiServiceClient: ClientProxy) {}
+  constructor(@Inject(configService.config?.api.serviceToken) private apiServiceClient: ClientProxy) {}
 
   async healthCheck() {
     return true;

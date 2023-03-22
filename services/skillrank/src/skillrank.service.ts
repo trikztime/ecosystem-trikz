@@ -29,7 +29,7 @@ const skillrankQueue = new EventQueue<true | null>();
 @Injectable()
 export class SkillrankService {
   constructor(
-    @Inject(configService.config?.api.microserviceToken) private apiServiceClient: ClientProxy,
+    @Inject(configService.config?.api.serviceToken) private apiServiceClient: ClientProxy,
     private prismaService: PrismaService,
   ) {}
 

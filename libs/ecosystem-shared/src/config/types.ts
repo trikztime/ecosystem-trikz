@@ -3,12 +3,17 @@ export type DatabaseConfig = {
 };
 
 export type CommonMicroserviceConfig = {
-  microserviceToken: string;
-  microserviceHost?: string;
-  microservicePort: number;
+  serviceToken: string;
+  serviceHost?: string;
+  servicePort: number;
+};
+
+export type ServerConfig = {
+  id: string;
 };
 
 export interface IEcosystemConfig {
   api: CommonMicroserviceConfig & DatabaseConfig;
   skillrank: CommonMicroserviceConfig & DatabaseConfig;
+  servers: ServerConfig[];
 }
