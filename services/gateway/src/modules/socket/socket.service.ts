@@ -3,7 +3,7 @@ import { createServer, Server, Socket } from "net";
 
 import { HandshakeEventPayload, SocketEventCodes } from "./events";
 import { IClientSocket, ISocketMessageEvent } from "./types";
-import { OnMessageProcessedCallback, SocketDataHandler } from "./utils/socket-data-handler";
+import { OnMessageCompleteCallback, SocketDataHandler } from "./utils";
 
 const logger = new Logger("Socket");
 const HANDSHAKE_TIMEOUT = 5000;
@@ -43,42 +43,46 @@ export class SocketService {
       return;
     }
 
+    // установка null в данные клиента до получения хендшейка
     this.updateClientSocketData(socket, null);
 
-    socket.on("error", () => null);
-    socket.on("close", this.handleClientDisconnect.bind(this));
-    socket.on("data", (data) => this.handleClientData(socket, data));
-
     // подписка на готовые сообщения
-    const onMessageProcessed: OnMessageProcessedCallback = (message) => {
+    const onMessageComplete: OnMessageCompleteCallback = (message) => {
       this.handleClientProcessedMessage(socket, message);
     };
-    const socketHandler = new SocketDataHandler(onMessageProcessed);
+    const socketHandler = new SocketDataHandler(onMessageComplete);
     this.clientSocketDataHandlers.set(socket, socketHandler);
 
-    // таймаут хендшейка
-    const timeout = setTimeout(() => {
-      this.deleteClientData(socket);
-      socket.destroy();
-    }, HANDSHAKE_TIMEOUT);
+    // если хендшейк не пришел в течении нужного времени - удалить клиента
+    const timeout = setTimeout(() => this.deleteClientSocket(socket), HANDSHAKE_TIMEOUT);
     this.handshakeTimeouts.set(socket, timeout);
+
+    socket.on("error", this.handleClientError.bind(this));
+    socket.on("close", this.handleClientDisconnect.bind(this));
+    socket.on("data", (data) => this.handleClientData(socket, data));
   }
 
-  private deleteClientData(socket: Socket) {
+  private deleteClientSocket(socket: Socket) {
     const timeout = this.handshakeTimeouts.get(socket);
     if (timeout) clearTimeout(timeout);
 
+    this.clients.delete(socket);
     this.handshakeTimeouts.delete(socket);
     this.clientSocketDataHandlers.delete(socket);
+
+    socket.destroy();
   }
 
   private updateClientSocketData(socket: Socket, socketData: IClientSocket | null) {
     this.clients.set(socket, socketData);
   }
 
+  private handleClientError(socket: Socket) {
+    this.deleteClientSocket(socket);
+  }
+
   private handleClientDisconnect(socket: Socket) {
-    this.deleteClientData(socket);
-    this.clients.delete(socket);
+    this.deleteClientSocket(socket);
   }
 
   private handleClientData(socket: Socket, data: Buffer) {
@@ -102,6 +106,7 @@ export class SocketService {
   }
 
   private handleHandshakeEvent(socket: Socket, payload: HandshakeEventPayload) {
+    // TODO получать инфу из ENV и заполнять данные по серверу
     this.updateClientSocketData(socket, { socket, serverId: payload.id ?? null });
 
     const timeout = this.handshakeTimeouts.get(socket);

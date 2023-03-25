@@ -2,17 +2,17 @@ import { Socket } from "net";
 
 import { ISocketMessageEvent } from "../types";
 
-export type OnMessageProcessedCallback = (message: ISocketMessageEvent) => void;
+export type OnMessageCompleteCallback = (message: ISocketMessageEvent) => void;
 
 const HEADER_LENGTH = 4;
 
 export class SocketDataHandler {
   private bytesLeft = 0;
   private bytesArray = "";
-  private onMessageProcessed: OnMessageProcessedCallback;
+  private onMessageComplete: OnMessageCompleteCallback;
 
-  constructor(cb: OnMessageProcessedCallback) {
-    this.onMessageProcessed = cb;
+  constructor(cb: OnMessageCompleteCallback) {
+    this.onMessageComplete = cb;
   }
 
   handleSocketData = (socket: Socket, data: Buffer): void => {
@@ -55,7 +55,7 @@ export class SocketDataHandler {
       this.bytesLeft -= currentFragmentLength;
 
       if (this.bytesLeft == 0) {
-        this.handleMessage(socket, this.bytesArray);
+        this.handleMessageComplete(socket, this.bytesArray);
         this.clearBytesArray();
       }
 
@@ -86,16 +86,17 @@ export class SocketDataHandler {
     this.bytesArray += bytes;
   }
 
-  private handleMessage(socket: Socket, message: string) {
+  private handleMessageComplete(socket: Socket, message: string) {
     try {
       const data = JSON.parse(message);
 
+      // TODO перенести в сервис определение структуры сообщения
       const messageEvent: ISocketMessageEvent = {
         sender: socket,
         event: data.event,
         payload: data.payload || "",
       };
-      this.onMessageProcessed(messageEvent);
+      this.onMessageComplete(messageEvent);
     } catch (error) {
       console.error(error);
     }
