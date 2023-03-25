@@ -3,7 +3,7 @@ import { createServer, Server, Socket } from "net";
 
 import { HandshakeEventPayload, SocketEventCodes } from "./events";
 import { IClientSocket, ISocketMessageEvent } from "./types";
-import { SocketDataHandler } from "./utils/socket-data-handler";
+import { OnMessageProcessedCallback, SocketDataHandler } from "./utils/socket-data-handler";
 
 const logger = new Logger("Socket");
 const HANDSHAKE_TIMEOUT = 5000;
@@ -32,7 +32,7 @@ export class SocketService {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private isClientWhitelisted(socket: Socket): boolean {
-    // TODO проверка вайилист
+    // TODO проверка вайтлист
     return true;
   }
 
@@ -50,12 +50,10 @@ export class SocketService {
     socket.on("data", (data) => this.handleClientData(socket, data));
 
     // подписка на готовые сообщения
-    const socketHandler = new SocketDataHandler();
-    socketHandler.subject.subscribe({
-      next: (messageEvent) => {
-        this.handleClientParsedEvent(socket, messageEvent);
-      },
-    });
+    const onMessageProcessed: OnMessageProcessedCallback = (message) => {
+      this.handleClientProcessedMessage(socket, message);
+    };
+    const socketHandler = new SocketDataHandler(onMessageProcessed);
     this.clientSocketDataHandlers.set(socket, socketHandler);
 
     // таймаут хендшейка
@@ -68,22 +66,14 @@ export class SocketService {
 
   private deleteClientData(socket: Socket) {
     const timeout = this.handshakeTimeouts.get(socket);
-    const socketHandler = this.clientSocketDataHandlers.get(socket);
+    if (timeout) clearTimeout(timeout);
+
     this.handshakeTimeouts.delete(socket);
     this.clientSocketDataHandlers.delete(socket);
-
-    if (timeout) clearTimeout(timeout);
-    if (socketHandler) socketHandler.subject.unsubscribe();
   }
 
   private updateClientSocketData(socket: Socket, socketData: IClientSocket | null) {
     this.clients.set(socket, socketData);
-
-    // TODO вынести в обработку ивента handshake
-    const timeout = this.handshakeTimeouts.get(socket);
-    if (timeout) {
-      clearTimeout(timeout);
-    }
   }
 
   private handleClientDisconnect(socket: Socket) {
@@ -102,13 +92,21 @@ export class SocketService {
     dataHandler?.handleSocketData(socket, data);
   }
 
-  private handleClientParsedEvent(socket: Socket, message: ISocketMessageEvent) {
+  private handleClientProcessedMessage(socket: Socket, message: ISocketMessageEvent) {
     switch (message.event) {
       case SocketEventCodes.handshake: {
-        // TODO добавить хендлеры
         const payload = message.payload as HandshakeEventPayload;
-        this.updateClientSocketData(socket, { socket, serverId: payload.id ?? null });
+        this.handleHandshakeEvent(socket, payload);
       }
+    }
+  }
+
+  private handleHandshakeEvent(socket: Socket, payload: HandshakeEventPayload) {
+    this.updateClientSocketData(socket, { socket, serverId: payload.id ?? null });
+
+    const timeout = this.handshakeTimeouts.get(socket);
+    if (timeout) {
+      clearTimeout(timeout);
     }
   }
 }

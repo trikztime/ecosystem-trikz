@@ -1,22 +1,18 @@
 import { Socket } from "net";
-import { Subject } from "rxjs";
 
 import { ISocketMessageEvent } from "../types";
+
+export type OnMessageProcessedCallback = (message: ISocketMessageEvent) => void;
 
 const HEADER_LENGTH = 4;
 
 export class SocketDataHandler {
   private bytesLeft = 0;
   private bytesArray = "";
-  private _subject: Subject<ISocketMessageEvent>;
+  private onMessageProcessed: OnMessageProcessedCallback;
 
-  constructor() {
-    // TODO заменить на передачу колбэка
-    this._subject = new Subject<ISocketMessageEvent>();
-  }
-
-  get subject() {
-    return this._subject;
+  constructor(cb: OnMessageProcessedCallback) {
+    this.onMessageProcessed = cb;
   }
 
   handleSocketData = (socket: Socket, data: Buffer): void => {
@@ -99,7 +95,7 @@ export class SocketDataHandler {
         event: data.event,
         payload: data.payload || "",
       };
-      this.subject.next(messageEvent);
+      this.onMessageProcessed(messageEvent);
     } catch (error) {
       console.error(error);
     }
