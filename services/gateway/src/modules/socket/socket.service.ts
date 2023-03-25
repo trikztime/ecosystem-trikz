@@ -22,12 +22,19 @@ export class SocketService {
 
     this.server = createServer();
     this.server.on("connection", this.handleConnection.bind(this));
+    this.server.on("close", () => this.deleteAllClients.bind(this));
+    this.server.on("error", () => this.deleteAllClients.bind(this));
 
     // TODO порт в env
     const port = 5000;
     this.server.listen(port, () => {
       logger.log(`Socket started at ${port}`);
     });
+  }
+
+  private deleteAllClients() {
+    const clients = Array.from(this.clients.keys());
+    clients.forEach((socket) => this.deleteClientSocket(socket));
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -43,6 +50,8 @@ export class SocketService {
       return;
     }
 
+    logger.warn(`Client connected ${socket.remoteAddress}:${socket.remotePort}`);
+
     // установка null в данные клиента до получения хендшейка
     this.updateClientSocketData(socket, null);
 
@@ -57,8 +66,8 @@ export class SocketService {
     const timeout = setTimeout(() => this.deleteClientSocket(socket), HANDSHAKE_TIMEOUT);
     this.handshakeTimeouts.set(socket, timeout);
 
-    socket.on("error", this.handleClientError.bind(this));
-    socket.on("close", this.handleClientDisconnect.bind(this));
+    socket.on("error", () => this.handleClientError(socket));
+    socket.on("close", () => this.handleClientDisconnect(socket));
     socket.on("data", (data) => this.handleClientData(socket, data));
   }
 

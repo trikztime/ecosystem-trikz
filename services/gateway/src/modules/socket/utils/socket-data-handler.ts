@@ -92,7 +92,7 @@ export class SocketDataHandler {
 
       // TODO перенести в сервис определение структуры сообщения
       const messageEvent: ISocketMessageEvent = {
-        sender: socket,
+        socket,
         event: data.event,
         payload: data.payload || "",
       };

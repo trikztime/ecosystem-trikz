@@ -13,7 +13,7 @@ export interface IClientSocket {
 }
 
 export interface ISocketMessageEvent {
-  sender: Socket;
+  socket: Socket;
   event: number;
   payload: unknown;
 }
