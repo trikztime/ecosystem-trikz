@@ -11,10 +11,9 @@ import {
   TrackCodes,
 } from "@trikztime/ecosystem-shared/const";
 import { MapDTO, RecordDTO } from "@trikztime/ecosystem-shared/dto";
-import { isDefined } from "@trikztime/ecosystem-shared/utils";
+import { EventQueue, isDefined } from "@trikztime/ecosystem-shared/utils";
 import { PrismaService } from "modules/prisma";
 import { lastValueFrom } from "rxjs";
-import { EventQueue } from "utils/event-queue";
 import { getGroupSizes, getRecordWeightedPoints } from "utils/groups";
 
 interface IRecalculatedSkillrank {

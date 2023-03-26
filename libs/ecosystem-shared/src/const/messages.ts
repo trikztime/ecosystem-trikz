@@ -27,6 +27,7 @@ export type SkillrankRecalculateMapPayload = {
 /* discord */
 export type DiscordCommonWebhookActionPayload = {
   url: string;
+  channelId: string;
   serverId: string;
 };
 

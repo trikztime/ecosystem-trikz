@@ -12,6 +12,7 @@ import {
   TrackCodes,
   TrackNames,
 } from "@trikztime/ecosystem-shared/const";
+import { EventQueue } from "@trikztime/ecosystem-shared/utils";
 import {
   ChannelType,
   Client,
@@ -30,13 +31,27 @@ const logger = new Logger();
 @Injectable()
 export class DiscordService {
   private bot: Client;
+  private channelQueues: Map<string, EventQueue<void>>;
 
   constructor() {
+    this.channelQueues = new Map();
+
     this.bot = new Client({ intents: ["Guilds", "GuildMessages", "MessageContent"] });
     this.bot.login(configService.config?.discord.botToken);
 
     this.bot.on("ready", (client) => logger.log(`Logged in as ${client.user.tag}`));
     this.bot.on("messageCreate", this.handleMessageCreate.bind(this));
+  }
+
+  addChannelTaskToQueue(channelId: string, task: () => Promise<void>) {
+    const queue = this.channelQueues.get(channelId) ?? new EventQueue();
+    queue.addEvent(task, () => null);
+
+    const hasQueue = Boolean(this.channelQueues.get(channelId));
+
+    if (!hasQueue) {
+      this.channelQueues.set(channelId, queue);
+    }
   }
 
   async sendGameChatMessageWebhook(payload: DiscordSendGameChatMessagePayload) {
@@ -71,7 +86,7 @@ export class DiscordService {
 
     const embed = new EmbedBuilder()
       .setColor("#ff5959")
-      .setAuthor({ name: `[${serverId}] ${name} - Connected to server`, iconURL: avatarURL, url: profileURL })
+      .setAuthor({ name: `[${serverId}] ${name} - Disconnected from server`, iconURL: avatarURL, url: profileURL })
       .setDescription(reason);
 
     await this.sendWebhook(url, { embeds: [embed] });

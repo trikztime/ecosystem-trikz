@@ -1,8 +1,26 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
+import { ClientProxy } from "@nestjs/microservices";
 import { configService } from "@trikztime/ecosystem-shared/config";
+import {
+  DISCORD_SEND_GAME_CHAT_MESSAGE_WEBHOOK_CMD,
+  DISCORD_SEND_MAP_CHANGE_MESSAGE_WEBHOOK_CMD,
+  DISCORD_SEND_PLAYER_CONNECT_MESSAGE_WEBHOOK_CMD,
+  DISCORD_SEND_PLAYER_DISCONNECT_MESSAGE_WEBHOOK_CMD,
+  DiscordSendGameChatMessagePayload,
+  DiscordSendMapChangeMessagePayload,
+  DiscordSendPlayerConnectMessagePayload,
+  DiscordSendPlayerDisconnectMessagePayload,
+} from "@trikztime/ecosystem-shared/const";
 import { createServer, Server, Socket } from "net";
 
-import { HandshakeEventPayload, SocketEventCodes } from "./events";
+import {
+  ChatMessageEventPayload,
+  HandshakeEventPayload,
+  MapChangeEventPayload,
+  PlayerConnectEventPayload,
+  PlayerDisconnectEventPayload,
+  SocketEventCodes,
+} from "./events";
 import { ISocketClientInfo, ISocketMessageEvent } from "./types";
 import { OnMessageCompleteCallback, SocketDataHandler } from "./utils";
 
@@ -16,7 +34,7 @@ export class SocketService {
   private handshakeTimeouts: Map<Socket, NodeJS.Timeout> = new Map();
   private clientSocketDataHandlers: Map<Socket, SocketDataHandler> = new Map();
 
-  constructor() {
+  constructor(@Inject(configService.config?.discord.serviceToken) private discordServiceClient: ClientProxy) {
     this.clients.clear();
     this.handshakeTimeouts.clear();
     this.clientSocketDataHandlers.clear();
@@ -72,6 +90,27 @@ export class SocketService {
     socket.on("data", (data) => this.handleClientData(socket, data));
   }
 
+  private handleClientError(socket: Socket) {
+    logger.warn(`Client error ${socket.remoteAddress}:${socket.remotePort}`);
+    this.deleteClientSocket(socket);
+  }
+
+  private handleClientDisconnect(socket: Socket) {
+    logger.warn(`Client disconnected ${socket.remoteAddress}:${socket.remotePort}`);
+    this.deleteClientSocket(socket);
+  }
+
+  private handleClientData(socket: Socket, data: Buffer) {
+    if (!this.isClientWhitelisted(socket)) {
+      socket.destroy();
+      return;
+    }
+
+    logger.debug(`DATA: ${data}`);
+    const dataHandler = this.clientSocketDataHandlers.get(socket);
+    dataHandler?.handleSocketData(socket, data);
+  }
+
   private deleteClientSocket(socket: Socket) {
     const timeout = this.handshakeTimeouts.get(socket);
     if (timeout) clearTimeout(timeout);
@@ -87,30 +126,32 @@ export class SocketService {
     this.clients.set(socket, socketData);
   }
 
-  private handleClientError(socket: Socket) {
-    this.deleteClientSocket(socket);
-  }
-
-  private handleClientDisconnect(socket: Socket) {
-    this.deleteClientSocket(socket);
-  }
-
-  private handleClientData(socket: Socket, data: Buffer) {
-    if (!this.isClientWhitelisted(socket)) {
-      socket.destroy();
-      return;
-    }
-
-    logger.debug(`DATA: ${data}`);
-    const dataHandler = this.clientSocketDataHandlers.get(socket);
-    dataHandler?.handleSocketData(socket, data);
-  }
-
   private handleClientProcessedMessage(socket: Socket, message: ISocketMessageEvent) {
     switch (message.event) {
       case SocketEventCodes.handshake: {
         const payload = message.payload as HandshakeEventPayload;
         this.handleHandshakeEvent(socket, payload);
+        break;
+      }
+      case SocketEventCodes.chatMessage: {
+        const payload = message.payload as ChatMessageEventPayload;
+        this.handleChatMessageEvent(socket, payload);
+        break;
+      }
+      case SocketEventCodes.playerConnect: {
+        const payload = message.payload as PlayerConnectEventPayload;
+        this.handlePlayerConnectEvent(socket, payload);
+        break;
+      }
+      case SocketEventCodes.playerDisconnect: {
+        const payload = message.payload as PlayerDisconnectEventPayload;
+        this.handlePlayerDisconnectEvent(socket, payload);
+        break;
+      }
+      case SocketEventCodes.mapChange: {
+        const payload = message.payload as MapChangeEventPayload;
+        this.handleMapChangeEvent(socket, payload);
+        break;
       }
     }
   }
@@ -127,5 +168,90 @@ export class SocketService {
         clearTimeout(timeout);
       }
     }
+  }
+
+  private handleChatMessageEvent(socket: Socket, payload: ChatMessageEventPayload) {
+    const clientConfig = this.clients.get(socket)?.config;
+    if (!clientConfig) return;
+
+    const { id, discordChatWebhookUrl, discordChatChannelId } = clientConfig;
+    const { authId, message, name } = payload;
+
+    if (!discordChatWebhookUrl || !discordChatChannelId) return;
+
+    this.discordServiceClient.emit<void, DiscordSendGameChatMessagePayload>(
+      DISCORD_SEND_GAME_CHAT_MESSAGE_WEBHOOK_CMD,
+      {
+        url: discordChatWebhookUrl,
+        channelId: discordChatChannelId,
+        serverId: id,
+        authId,
+        message,
+        name,
+      },
+    );
+  }
+
+  private handlePlayerConnectEvent(socket: Socket, payload: PlayerConnectEventPayload) {
+    const clientConfig = this.clients.get(socket)?.config;
+    if (!clientConfig) return;
+
+    const { id, discordChatWebhookUrl, discordChatChannelId } = clientConfig;
+    const { authId, name } = payload;
+
+    if (!discordChatWebhookUrl || !discordChatChannelId) return;
+
+    this.discordServiceClient.emit<void, DiscordSendPlayerConnectMessagePayload>(
+      DISCORD_SEND_PLAYER_CONNECT_MESSAGE_WEBHOOK_CMD,
+      {
+        url: discordChatWebhookUrl,
+        channelId: discordChatChannelId,
+        serverId: id,
+        authId,
+        name,
+      },
+    );
+  }
+
+  private handlePlayerDisconnectEvent(socket: Socket, payload: PlayerDisconnectEventPayload) {
+    const clientConfig = this.clients.get(socket)?.config;
+    if (!clientConfig) return;
+
+    const { id, discordChatWebhookUrl, discordChatChannelId } = clientConfig;
+    const { authId, name, reason } = payload;
+
+    if (!discordChatWebhookUrl || !discordChatChannelId) return;
+
+    this.discordServiceClient.emit<void, DiscordSendPlayerDisconnectMessagePayload>(
+      DISCORD_SEND_PLAYER_DISCONNECT_MESSAGE_WEBHOOK_CMD,
+      {
+        url: discordChatWebhookUrl,
+        channelId: discordChatChannelId,
+        serverId: id,
+        authId,
+        name,
+        reason,
+      },
+    );
+  }
+
+  private handleMapChangeEvent(socket: Socket, payload: MapChangeEventPayload) {
+    const clientConfig = this.clients.get(socket)?.config;
+    if (!clientConfig) return;
+
+    const { id, discordChatWebhookUrl, discordChatChannelId } = clientConfig;
+    const { name } = payload;
+
+    if (!discordChatWebhookUrl || !discordChatChannelId) return;
+
+    this.discordServiceClient.emit<void, DiscordSendMapChangeMessagePayload>(
+      DISCORD_SEND_MAP_CHANGE_MESSAGE_WEBHOOK_CMD,
+      {
+        url: discordChatWebhookUrl,
+        channelId: discordChatChannelId,
+        serverId: id,
+        mapName: name,
+      },
+    );
   }
 }
