@@ -35,21 +35,35 @@ class ConfigService {
     });
 
     return {
+      steamApiKey: env.STEAM_API_KEY ?? "",
+      gateway: {
+        serviceToken: env.GATEWAY_SERVICE_TOKEN ?? "",
+        servicePort: Number(env.GATEWAY_SERVICE_PORT),
+        serviceHost: env.GATEWAY_SERVICE_HOST,
+      },
       api: {
-        databaseUrl: env.API_DATABASE_URL ?? "",
         serviceToken: env.API_SERVICE_TOKEN ?? "",
         servicePort: Number(env.API_SERVICE_PORT),
         serviceHost: env.API_SERVICE_HOST,
+        databaseUrl: env.API_DATABASE_URL ?? "",
       },
       skillrank: {
-        databaseUrl: env.SKILLRANK_DATABASE_URL ?? "",
         serviceToken: env.SKILLRANK_SERVICE_TOKEN ?? "",
         servicePort: Number(env.SKILLRANK_SERVICE_PORT),
         serviceHost: env.SKILLRANK_SERVICE_HOST,
+        databaseUrl: env.SKILLRANK_DATABASE_URL ?? "",
+      },
+      discord: {
+        serviceToken: env.DISCORD_SERVICE_TOKEN ?? "",
+        servicePort: Number(env.DISCORD_SERVICE_PORT),
+        serviceHost: env.DISCORD_SERVICE_HOST,
+        botToken: env.DISCORD_SERVICE_BOT_TOKEN ?? "",
       },
       servers: Array.from(uniqueServerIndexes.values()).map((serverIndex): ServerConfig => {
         return {
           id: env[`${serverConfigPrefix}_${serverIndex}_ID`] ?? "",
+          discordChatChannelId: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_CHAT_CHANNEL_ID`],
+          discordChatWebhookUrl: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_CHAT_WEBHOOK_URL`],
         };
       }),
     };

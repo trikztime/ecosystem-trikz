@@ -1,8 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common";
+import { configService } from "@trikztime/ecosystem-shared/config";
 import { createServer, Server, Socket } from "net";
 
 import { HandshakeEventPayload, SocketEventCodes } from "./events";
-import { IClientSocket, ISocketMessageEvent } from "./types";
+import { ISocketClientInfo, ISocketMessageEvent } from "./types";
 import { OnMessageCompleteCallback, SocketDataHandler } from "./utils";
 
 const logger = new Logger("Socket");
@@ -11,7 +12,7 @@ const HANDSHAKE_TIMEOUT = 5000;
 @Injectable()
 export class SocketService {
   private server: Server;
-  private clients: Map<Socket, IClientSocket | null> = new Map();
+  private clients: Map<Socket, ISocketClientInfo | null> = new Map();
   private handshakeTimeouts: Map<Socket, NodeJS.Timeout> = new Map();
   private clientSocketDataHandlers: Map<Socket, SocketDataHandler> = new Map();
 
@@ -53,7 +54,7 @@ export class SocketService {
     logger.warn(`Client connected ${socket.remoteAddress}:${socket.remotePort}`);
 
     // установка null в данные клиента до получения хендшейка
-    this.updateClientSocketData(socket, null);
+    this.updateSocketClientInfo(socket, null);
 
     // подписка на готовые сообщения
     const onMessageComplete: OnMessageCompleteCallback = (message) => {
@@ -82,7 +83,7 @@ export class SocketService {
     socket.destroy();
   }
 
-  private updateClientSocketData(socket: Socket, socketData: IClientSocket | null) {
+  private updateSocketClientInfo(socket: Socket, socketData: ISocketClientInfo | null) {
     this.clients.set(socket, socketData);
   }
 
@@ -115,12 +116,16 @@ export class SocketService {
   }
 
   private handleHandshakeEvent(socket: Socket, payload: HandshakeEventPayload) {
-    // TODO получать инфу из ENV и заполнять данные по серверу
-    this.updateClientSocketData(socket, { socket, serverId: payload.id ?? null });
+    const { id } = payload;
+    const socketClientConfig = configService.config?.servers.find((server) => server.id === id);
 
-    const timeout = this.handshakeTimeouts.get(socket);
-    if (timeout) {
-      clearTimeout(timeout);
+    if (socketClientConfig) {
+      this.updateSocketClientInfo(socket, { socket, config: socketClientConfig });
+
+      const timeout = this.handshakeTimeouts.get(socket);
+      if (timeout) {
+        clearTimeout(timeout);
+      }
     }
   }
 }

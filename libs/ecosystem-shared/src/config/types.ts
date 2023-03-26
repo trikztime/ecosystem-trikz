@@ -1,5 +1,7 @@
-export type DatabaseConfig = {
-  databaseUrl: string;
+export type ServerConfig = {
+  id: string;
+  discordChatChannelId?: string;
+  discordChatWebhookUrl?: string;
 };
 
 export type CommonMicroserviceConfig = {
@@ -8,12 +10,19 @@ export type CommonMicroserviceConfig = {
   servicePort: number;
 };
 
-export type ServerConfig = {
-  id: string;
+export type DatabaseServiceConfig = {
+  databaseUrl: string;
+};
+
+export type DiscordServiceConfig = {
+  botToken: string;
 };
 
 export interface IEcosystemConfig {
-  api: CommonMicroserviceConfig & DatabaseConfig;
-  skillrank: CommonMicroserviceConfig & DatabaseConfig;
+  steamApiKey: string;
+  gateway: CommonMicroserviceConfig;
+  api: CommonMicroserviceConfig & DatabaseServiceConfig;
+  skillrank: CommonMicroserviceConfig & DatabaseServiceConfig;
+  discord: CommonMicroserviceConfig & DiscordServiceConfig;
   servers: ServerConfig[];
 }

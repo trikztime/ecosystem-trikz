@@ -1,3 +1,4 @@
+import { ServerConfig } from "@trikztime/ecosystem-shared/config";
 import { Socket } from "net";
 
 export interface IDiscordChat {
@@ -6,10 +7,9 @@ export interface IDiscordChat {
   webhookToken: string;
 }
 
-export interface IClientSocket {
+export interface ISocketClientInfo {
   socket: Socket;
-  serverId: string;
-  discordChat?: IDiscordChat;
+  config: ServerConfig;
 }
 
 export interface ISocketMessageEvent {

@@ -1,29 +1,30 @@
 import { Module } from "@nestjs/common/";
-import { ClientsModule, Transport } from "@nestjs/microservices";
+import { ClientProviderOptions, ClientsModule, Transport } from "@nestjs/microservices";
 
 import { configService } from "../../config";
+import { CommonMicroserviceConfig } from "../../config/types";
+
+const getMicroserviceConfig = (
+  config: CommonMicroserviceConfig | undefined,
+  defaultToken: string,
+): ClientProviderOptions => {
+  return {
+    name: config?.serviceToken ?? defaultToken,
+    transport: Transport.TCP,
+    options: {
+      host: config?.serviceHost,
+      port: config?.servicePort,
+    },
+  };
+};
 
 const config = configService.config;
-const api = config?.api;
-const skillrank = config?.skillrank;
 
 const registeredClientsModule = ClientsModule.register([
-  {
-    name: api?.serviceToken ?? "api",
-    transport: Transport.TCP,
-    options: {
-      host: api?.serviceHost,
-      port: api?.servicePort,
-    },
-  },
-  {
-    name: skillrank?.serviceToken ?? "skillrank",
-    transport: Transport.TCP,
-    options: {
-      host: skillrank?.serviceHost,
-      port: skillrank?.servicePort,
-    },
-  },
+  getMicroserviceConfig(config?.gateway, "gateway"),
+  getMicroserviceConfig(config?.api, "api"),
+  getMicroserviceConfig(config?.skillrank, "skillrank"),
+  getMicroserviceConfig(config?.discord, "discord"),
 ]);
 
 @Module({
