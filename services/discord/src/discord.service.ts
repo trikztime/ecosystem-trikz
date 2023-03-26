@@ -40,46 +40,47 @@ export class DiscordService {
   }
 
   async sendGameChatMessageWebhook(payload: DiscordSendGameChatMessagePayload) {
-    const { url, authId, name, message } = payload;
+    const { url, serverId, authId, name, message } = payload;
 
     const avatarURL = await inMemoryAvatarService.getAvatar(authId);
 
     // disable pings from webhooks
     const escapedMessage = message.replace("@everyone", "@everyonе").replace("@here", "@herе");
-    await this.sendWebhook(url, { username: name, content: escapedMessage, avatarURL });
+    const username = `[${serverId}] ${name}`;
+    await this.sendWebhook(url, { username, content: escapedMessage, avatarURL });
   }
 
   async sendPlayerConnectMessageWebhook(payload: DiscordSendPlayerConnectMessagePayload) {
-    const { url, authId, name } = payload;
+    const { url, serverId, authId, name } = payload;
 
     const avatarURL = await inMemoryAvatarService.getAvatar(authId);
     const profileURL = `https://steamcommunity.com/profiles/${authId}`;
 
     const embed = new EmbedBuilder()
       .setColor("#72ff59")
-      .setAuthor({ name: `${name} - Connected to server`, iconURL: avatarURL, url: profileURL });
+      .setAuthor({ name: `[${serverId}] ${name} - Connected to server`, iconURL: avatarURL, url: profileURL });
 
     await this.sendWebhook(url, { embeds: [embed] });
   }
 
   async sendPlayerDisconnectMessageWebhook(payload: DiscordSendPlayerDisconnectMessagePayload) {
-    const { url, authId, name, reason } = payload;
+    const { url, serverId, authId, name, reason } = payload;
 
     const avatarURL = await inMemoryAvatarService.getAvatar(authId);
     const profileURL = `https://steamcommunity.com/profiles/${authId}`;
 
     const embed = new EmbedBuilder()
       .setColor("#ff5959")
-      .setAuthor({ name: `${name} - Connected to server`, iconURL: avatarURL, url: profileURL })
+      .setAuthor({ name: `[${serverId}] ${name} - Connected to server`, iconURL: avatarURL, url: profileURL })
       .setDescription(reason);
 
     await this.sendWebhook(url, { embeds: [embed] });
   }
 
   async sendMapChangeMessageWebhook(payload: DiscordSendMapChangeMessagePayload) {
-    const { url, mapName } = payload;
+    const { url, serverId, mapName } = payload;
 
-    const embed = new EmbedBuilder().setColor("#59ffee").setDescription(`Map changed to **${mapName}**`);
+    const embed = new EmbedBuilder().setColor("#59ffee").setDescription(`[${serverId}] Map changed to **${mapName}**`);
 
     await this.sendWebhook(url, { embeds: [embed] });
   }
