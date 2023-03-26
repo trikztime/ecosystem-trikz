@@ -13,12 +13,12 @@ import { MapsService } from "./maps.service";
 export class MapsController {
   constructor(private mapsService: MapsService) {}
 
-  @MessagePattern({ cmd: API_GET_MAPS_CMD })
+  @MessagePattern(API_GET_MAPS_CMD)
   async getMaps(): Promise<MapDTO[]> {
     return await this.mapsService.getMaps();
   }
 
-  @MessagePattern({ cmd: API_GET_MAP_BY_NAME_CMD })
+  @MessagePattern(API_GET_MAP_BY_NAME_CMD)
   async getMapByName(@Payload() payload: ApiGetMapByNameMessagePayload): Promise<MapDTO | null> {
     return await this.mapsService.getMapByName(payload.name);
   }

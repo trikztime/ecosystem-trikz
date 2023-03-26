@@ -76,13 +76,10 @@ export class SkillrankService {
   }
 
   private async recalculateAllTask(): Promise<true | null> {
-    const $allRecords = this.apiServiceClient.send<RecordDTO[], ApiGetRecordsMessagePayload>(
-      { cmd: API_GET_RECORDS_CMD },
-      {
-        track: TrackCodes.main,
-      },
-    );
-    const $allMaps = this.apiServiceClient.send<MapDTO[]>({ cmd: API_GET_MAPS_CMD }, {});
+    const $allRecords = this.apiServiceClient.send<RecordDTO[], ApiGetRecordsMessagePayload>(API_GET_RECORDS_CMD, {
+      track: TrackCodes.main,
+    });
+    const $allMaps = this.apiServiceClient.send<MapDTO[]>(API_GET_MAPS_CMD, {});
 
     const [records, maps] = await Promise.all([lastValueFrom($allRecords), lastValueFrom($allMaps)]);
 
@@ -123,20 +120,14 @@ export class SkillrankService {
   }
 
   private async recalculateMapTask(map: string, style: number): Promise<true | null> {
-    const $records = this.apiServiceClient.send<RecordDTO[], ApiGetRecordsMessagePayload>(
-      { cmd: API_GET_RECORDS_CMD },
-      {
-        map,
-        style,
-        track: TrackCodes.main,
-      },
-    );
-    const $map = this.apiServiceClient.send<MapDTO | null, ApiGetMapByNameMessagePayload>(
-      { cmd: API_GET_MAP_BY_NAME_CMD },
-      {
-        name: map,
-      },
-    );
+    const $records = this.apiServiceClient.send<RecordDTO[], ApiGetRecordsMessagePayload>(API_GET_RECORDS_CMD, {
+      map,
+      style,
+      track: TrackCodes.main,
+    });
+    const $map = this.apiServiceClient.send<MapDTO | null, ApiGetMapByNameMessagePayload>(API_GET_MAP_BY_NAME_CMD, {
+      name: map,
+    });
 
     const [records, mapInfo] = await Promise.all([lastValueFrom($records), lastValueFrom($map)]);
 

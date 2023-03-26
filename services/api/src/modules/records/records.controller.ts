@@ -9,7 +9,7 @@ import { RecordsService } from "./records.service";
 export class RecordsController {
   constructor(private recordsService: RecordsService) {}
 
-  @MessagePattern({ cmd: API_GET_RECORDS_CMD })
+  @MessagePattern(API_GET_RECORDS_CMD)
   async getRecords(@Payload() payload: ApiGetRecordsMessagePayload): Promise<RecordDTO[]> {
     const { map, track, style } = payload;
     return await this.recordsService.getRecords({ map, track, style });
