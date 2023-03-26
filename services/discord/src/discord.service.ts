@@ -2,6 +2,10 @@ import { Injectable, Logger } from "@nestjs/common";
 import { configService } from "@trikztime/ecosystem-shared/config";
 import {
   DiscordSendAnticheatNotificationPayload,
+  DiscordSendGameChatMessagePayload,
+  DiscordSendMapChangeMessagePayload,
+  DiscordSendPlayerConnectMessagePayload,
+  DiscordSendPlayerDisconnectMessagePayload,
   DiscordSendRecordNotificationPayload,
   StyleCodeNames,
   TrackCodeNames,
@@ -35,17 +39,21 @@ export class DiscordService {
     this.bot.on("messageCreate", this.handleMessageCreate.bind(this));
   }
 
-  async sendGameChatMessageWebhook(url: string, playerAuthId: string, name: string, message: string) {
-    const avatarURL = await inMemoryAvatarService.getAvatar(playerAuthId);
+  async sendGameChatMessageWebhook(payload: DiscordSendGameChatMessagePayload) {
+    const { url, authId, name, message } = payload;
+
+    const avatarURL = await inMemoryAvatarService.getAvatar(authId);
 
     // disable pings from webhooks
     const escapedMessage = message.replace("@everyone", "@everyonе").replace("@here", "@herе");
     await this.sendWebhook(url, { username: name, content: escapedMessage, avatarURL });
   }
 
-  async sendPlayerConnectMessageWebhook(url: string, playerAuthId: string, name: string) {
-    const avatarURL = await inMemoryAvatarService.getAvatar(playerAuthId);
-    const profileURL = `https://steamcommunity.com/profiles/${playerAuthId}`;
+  async sendPlayerConnectMessageWebhook(payload: DiscordSendPlayerConnectMessagePayload) {
+    const { url, authId, name } = payload;
+
+    const avatarURL = await inMemoryAvatarService.getAvatar(authId);
+    const profileURL = `https://steamcommunity.com/profiles/${authId}`;
 
     const embed = new EmbedBuilder()
       .setColor("#72ff59")
@@ -54,9 +62,11 @@ export class DiscordService {
     await this.sendWebhook(url, { embeds: [embed] });
   }
 
-  async sendPlayerDisconnectMessageWebhook(url: string, playerAuthId: string, name: string, reason: string) {
-    const avatarURL = await inMemoryAvatarService.getAvatar(playerAuthId);
-    const profileURL = `https://steamcommunity.com/profiles/${playerAuthId}`;
+  async sendPlayerDisconnectMessageWebhook(payload: DiscordSendPlayerDisconnectMessagePayload) {
+    const { url, authId, name, reason } = payload;
+
+    const avatarURL = await inMemoryAvatarService.getAvatar(authId);
+    const profileURL = `https://steamcommunity.com/profiles/${authId}`;
 
     const embed = new EmbedBuilder()
       .setColor("#ff5959")
@@ -66,7 +76,9 @@ export class DiscordService {
     await this.sendWebhook(url, { embeds: [embed] });
   }
 
-  async sendMapChangeMessageWebhook(url: string, mapName: string) {
+  async sendMapChangeMessageWebhook(payload: DiscordSendMapChangeMessagePayload) {
+    const { url, mapName } = payload;
+
     const embed = new EmbedBuilder().setColor("#59ffee").setDescription(`Map changed to **${mapName}**`);
 
     await this.sendWebhook(url, { embeds: [embed] });
@@ -105,7 +117,7 @@ export class DiscordService {
 
     const steamPrifile = `<https://steamcommunity.com/profiles/${authId}/>`;
 
-    const logMessage = `[${playerName}](${steamPrifile}) - ${message} (Map: ${mapName} | Track: ${trackName} | Style: ${styleName}) @ ${serverId}`;
+    const logMessage = `[${playerName}](${steamPrifile}) - ${message} @ Server: ${serverId} | ${mapName} | Track: ${trackName} | Style: ${styleName}`;
 
     await this.sendWebhook(url, logMessage);
   }
