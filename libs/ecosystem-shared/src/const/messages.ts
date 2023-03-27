@@ -56,6 +56,15 @@ export type DiscordSendMapChangeMessagePayload = DiscordCommonWebhookActionPaylo
   mapName: string;
 };
 
+export const DISCORD_SEND_ANTICHEAT_NOTIFICATION_WEBHOOK_CMD = "sendAnticheatNotificationWebhook";
+export type DiscordSendAnticheatNotificationPayload = DiscordCommonWebhookActionPayload & {
+  authId: string;
+  playerName: string;
+  mapName: string;
+  track: number;
+  message: string;
+};
+
 export const DISCORD_SEND_RECORD_NOTIFICATION_WEBHOOK_CMD = "sendRecordNotificationWebhook";
 export type DiscordSendRecordNotificationPayload = DiscordCommonWebhookActionPayload & {
   playerName1: string;
@@ -65,14 +74,4 @@ export type DiscordSendRecordNotificationPayload = DiscordCommonWebhookActionPay
   oldWR: number;
   track: number;
   style: number;
-};
-
-export const DISCORD_SEND_ANTICHEAT_NOTIFICATION_WEBHOOK_CMD = "sendAnticheatNotificationWebhook";
-export type DiscordSendAnticheatNotificationPayload = DiscordCommonWebhookActionPayload & {
-  authId: string;
-  playerName: string;
-  mapName: string;
-  track: number;
-  style: number;
-  message: string;
 };

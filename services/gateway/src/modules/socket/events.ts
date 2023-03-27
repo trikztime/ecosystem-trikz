@@ -4,8 +4,8 @@ export enum SocketEventKeys {
   PLAYER_CONNECT = "playerConnect",
   PLAYER_DISCONNECT = "playerDisconnect",
   MAP_CHANGE = "mapChange",
-  NOTIFICATION_ANTICHEAT = "notificationAnticheat",
-  NOTIFICATION_RECORD = "notificationRecord",
+  ANTICHEAT_NOTIFICATION = "anticheatNotification",
+  RECORD_NOTIFICATION = "recordNotification",
 }
 
 export const SocketEventCodes: Record<SocketEventKeys, number> = {
@@ -14,8 +14,8 @@ export const SocketEventCodes: Record<SocketEventKeys, number> = {
   playerConnect: 3,
   playerDisconnect: 4,
   mapChange: 5,
-  notificationAnticheat: 6,
-  notificationRecord: 7,
+  anticheatNotification: 6,
+  recordNotification: 7,
 };
 
 export type HandshakeEventPayload = {
@@ -44,4 +44,22 @@ export type PlayerDisconnectEventPayload = {
 
 export type MapChangeEventPayload = {
   name: string;
+};
+
+export type AnticheatNotificationEventPayload = {
+  authId: string;
+  name: string;
+  map: string;
+  track: number;
+  message: string;
+};
+
+export type RecordNotificationEventPayload = {
+  name1: string;
+  name2: string;
+  map: string;
+  time: number;
+  oldWR: number;
+  track: number;
+  style: number;
 };

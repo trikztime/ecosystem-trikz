@@ -2,6 +2,10 @@ export type ServerConfig = {
   id: string;
   discordChatChannelId?: string;
   discordChatWebhookUrl?: string;
+  discordAnticheatChannelId?: string;
+  discordAnticheatWebhookUrl?: string;
+  discordRecordsChannelId?: string;
+  discordRecordsWebhookUrl?: string;
 };
 
 export type CommonMicroserviceConfig = {

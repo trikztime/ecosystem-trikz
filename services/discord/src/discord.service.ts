@@ -126,14 +126,13 @@ export class DiscordService {
   }
 
   async sendAnticheatNotificationWebhook(payload: DiscordSendAnticheatNotificationPayload) {
-    const { authId, playerName, mapName, track, style, url, message, serverId } = payload;
+    const { authId, playerName, mapName, track, url, message, serverId } = payload;
 
     const trackName = TrackCodeNames[track] ?? "Unknown";
-    const styleName = StyleCodeNames[style] ?? "Unknown";
 
     const steamPrifile = `<https://steamcommunity.com/profiles/${authId}/>`;
 
-    const logMessage = `[${playerName}](${steamPrifile}) - ${message} @ Server: ${serverId} | ${mapName} | Track: ${trackName} | Style: ${styleName}`;
+    const logMessage = `[${playerName}](${steamPrifile}) - ${message} @ Server: ${serverId} | ${mapName} | Track: ${trackName}`;
 
     await this.sendWebhook(url, logMessage);
   }

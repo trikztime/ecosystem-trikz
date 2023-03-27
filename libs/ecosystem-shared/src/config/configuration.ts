@@ -64,6 +64,10 @@ class ConfigService {
           id: env[`${serverConfigPrefix}_${serverIndex}_ID`] ?? "",
           discordChatChannelId: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_CHAT_CHANNEL_ID`],
           discordChatWebhookUrl: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_CHAT_WEBHOOK_URL`],
+          discordAnticheatChannelId: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_ANTICHEAT_CHANNEL_ID`],
+          discordAnticheatWebhookUrl: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_ANTICHEAT_CHANNEL_ID`],
+          discordRecordsChannelId: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_RECORDS_CHANNEL_ID`],
+          discordRecordsWebhookUrl: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_RECORDS_CHANNEL_ID`],
         };
       }),
     };
