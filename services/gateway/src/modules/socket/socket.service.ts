@@ -2,6 +2,8 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { configService } from "@trikztime/ecosystem-shared/config";
 import {
+  AnticheatNotificationEventPayload,
+  ChatMessageEventPayload,
   DISCORD_SEND_ANTICHEAT_NOTIFICATION_WEBHOOK_CMD,
   DISCORD_SEND_GAME_CHAT_MESSAGE_WEBHOOK_CMD,
   DISCORD_SEND_MAP_CHANGE_MESSAGE_WEBHOOK_CMD,
@@ -14,21 +16,17 @@ import {
   DiscordSendPlayerConnectMessagePayload,
   DiscordSendPlayerDisconnectMessagePayload,
   DiscordSendRecordNotificationPayload,
-} from "@trikztime/ecosystem-shared/const";
-import { createServer, Server, Socket } from "net";
-
-import {
-  AnticheatNotificationEventPayload,
-  ChatMessageEventPayload,
   HandshakeEventPayload,
   MapChangeEventPayload,
   PlayerConnectEventPayload,
   PlayerDisconnectEventPayload,
   RecordNotificationEventPayload,
   SocketEventCodes,
-} from "./events";
-import { ISocketClientInfo, ISocketMessageEvent } from "./types";
-import { OnMessageCompleteCallback, SocketDataHandler } from "./utils";
+} from "@trikztime/ecosystem-shared/const";
+import { createServer, Server, Socket } from "net";
+
+import { BroadcastClientCheck, ISocketClientInfo, ISocketEventMessage } from "./types";
+import { broadcastSameChatChannelId, OnMessageCompleteCallback, SocketDataHandler } from "./utils";
 
 const logger = new Logger("Socket");
 const HANDSHAKE_TIMEOUT = 5000;
@@ -54,6 +52,21 @@ export class SocketService {
     const port = 5000;
     this.server.listen(port, () => {
       logger.log(`Socket started at ${port}`);
+    });
+  }
+
+  broadcast(eventMessage: ISocketEventMessage, shouldSendMessage: BroadcastClientCheck) {
+    const clientsTuple = Array.from(this.clients.entries());
+    const systemMessage = this.formatEventMessage(eventMessage);
+
+    clientsTuple.forEach(([socket, clientInfo]) => {
+      if (socket === eventMessage.socket) return;
+
+      if (!clientInfo) return;
+
+      if (shouldSendMessage(clientInfo)) {
+        socket.write(systemMessage);
+      }
     });
   }
 
@@ -132,48 +145,59 @@ export class SocketService {
     this.clients.set(socket, socketData);
   }
 
-  private handleClientProcessedMessage(socket: Socket, message: ISocketMessageEvent) {
+  private formatEventMessage(eventMessage: ISocketEventMessage) {
+    const messageObject = {
+      event: eventMessage.event,
+      payload: eventMessage.payload,
+    };
+    const json = JSON.stringify(messageObject);
+
+    const byteLength = Buffer.byteLength(json, "utf8");
+    const header = byteLength.toString().padStart(4, "0");
+
+    const systemReadyMessage = `${header}${json}`;
+
+    return systemReadyMessage;
+  }
+
+  private handleClientProcessedMessage(socket: Socket, message: ISocketEventMessage) {
     switch (message.event) {
       case SocketEventCodes.handshake: {
-        const payload = message.payload as HandshakeEventPayload;
-        this.handleHandshakeEvent(socket, payload);
+        this.handleHandshakeEvent(socket, message as ISocketEventMessage<HandshakeEventPayload>);
         break;
       }
       case SocketEventCodes.chatMessage: {
-        const payload = message.payload as ChatMessageEventPayload;
-        this.handleChatMessageEvent(socket, payload);
+        this.handleChatMessageEvent(socket, message as ISocketEventMessage<ChatMessageEventPayload>);
         break;
       }
       case SocketEventCodes.playerConnect: {
-        const payload = message.payload as PlayerConnectEventPayload;
-        this.handlePlayerConnectEvent(socket, payload);
+        this.handlePlayerConnectEvent(socket, message as ISocketEventMessage<PlayerConnectEventPayload>);
         break;
       }
       case SocketEventCodes.playerDisconnect: {
-        const payload = message.payload as PlayerDisconnectEventPayload;
-        this.handlePlayerDisconnectEvent(socket, payload);
+        this.handlePlayerDisconnectEvent(socket, message as ISocketEventMessage<PlayerDisconnectEventPayload>);
         break;
       }
       case SocketEventCodes.mapChange: {
-        const payload = message.payload as MapChangeEventPayload;
-        this.handleMapChangeEvent(socket, payload);
+        this.handleMapChangeEvent(socket, message as ISocketEventMessage<MapChangeEventPayload>);
         break;
       }
       case SocketEventCodes.anticheatNotification: {
-        const payload = message.payload as AnticheatNotificationEventPayload;
-        this.handleAnticheatNotificationEvent(socket, payload);
+        this.handleAnticheatNotificationEvent(
+          socket,
+          message as ISocketEventMessage<AnticheatNotificationEventPayload>,
+        );
         break;
       }
       case SocketEventCodes.recordNotification: {
-        const payload = message.payload as RecordNotificationEventPayload;
-        this.handleRecordNotificationEvent(socket, payload);
+        this.handleRecordNotificationEvent(socket, message as ISocketEventMessage<RecordNotificationEventPayload>);
         break;
       }
     }
   }
 
-  private handleHandshakeEvent(socket: Socket, payload: HandshakeEventPayload) {
-    const { id } = payload;
+  private handleHandshakeEvent(socket: Socket, eventMessage: ISocketEventMessage<HandshakeEventPayload>) {
+    const { id } = eventMessage.payload;
     const socketClientConfig = configService.config?.servers.find((server) => server.id === id);
 
     if (socketClientConfig) {
@@ -186,137 +210,130 @@ export class SocketService {
     }
   }
 
-  private handleChatMessageEvent(socket: Socket, payload: ChatMessageEventPayload) {
+  private handleChatMessageEvent(socket: Socket, eventMessage: ISocketEventMessage<ChatMessageEventPayload>) {
     const clientConfig = this.clients.get(socket)?.config;
     if (!clientConfig) return;
 
     const { id, discordChatWebhookUrl, discordChatChannelId } = clientConfig;
-    const { authId, message, name } = payload;
-
     if (!discordChatChannelId || !discordChatWebhookUrl) return;
 
     this.discordServiceClient.emit<void, DiscordSendGameChatMessagePayload>(
       DISCORD_SEND_GAME_CHAT_MESSAGE_WEBHOOK_CMD,
       {
-        url: discordChatWebhookUrl,
-        channelId: discordChatChannelId,
-        serverId: id,
-        authId,
-        message,
-        name,
+        discordData: {
+          url: discordChatWebhookUrl,
+          channelId: discordChatChannelId,
+          serverId: id,
+        },
+        eventData: eventMessage.payload,
       },
     );
+
+    this.broadcast(eventMessage, broadcastSameChatChannelId(discordChatChannelId));
   }
 
-  private handlePlayerConnectEvent(socket: Socket, payload: PlayerConnectEventPayload) {
+  private handlePlayerConnectEvent(socket: Socket, eventMessage: ISocketEventMessage<PlayerConnectEventPayload>) {
     const clientConfig = this.clients.get(socket)?.config;
     if (!clientConfig) return;
 
     const { id, discordChatWebhookUrl, discordChatChannelId } = clientConfig;
-    const { authId, name } = payload;
-
     if (!discordChatChannelId || !discordChatWebhookUrl) return;
 
     this.discordServiceClient.emit<void, DiscordSendPlayerConnectMessagePayload>(
       DISCORD_SEND_PLAYER_CONNECT_MESSAGE_WEBHOOK_CMD,
       {
-        url: discordChatWebhookUrl,
-        channelId: discordChatChannelId,
-        serverId: id,
-        authId,
-        name,
+        discordData: {
+          url: discordChatWebhookUrl,
+          channelId: discordChatChannelId,
+          serverId: id,
+        },
+        eventData: eventMessage.payload,
       },
     );
   }
 
-  private handlePlayerDisconnectEvent(socket: Socket, payload: PlayerDisconnectEventPayload) {
+  private handlePlayerDisconnectEvent(socket: Socket, eventMessage: ISocketEventMessage<PlayerDisconnectEventPayload>) {
     const clientConfig = this.clients.get(socket)?.config;
     if (!clientConfig) return;
 
     const { id, discordChatWebhookUrl, discordChatChannelId } = clientConfig;
-    const { authId, name, reason } = payload;
-
     if (!discordChatChannelId || !discordChatWebhookUrl) return;
 
     this.discordServiceClient.emit<void, DiscordSendPlayerDisconnectMessagePayload>(
       DISCORD_SEND_PLAYER_DISCONNECT_MESSAGE_WEBHOOK_CMD,
       {
-        url: discordChatWebhookUrl,
-        channelId: discordChatChannelId,
-        serverId: id,
-        authId,
-        name,
-        reason,
+        discordData: {
+          url: discordChatWebhookUrl,
+          channelId: discordChatChannelId,
+          serverId: id,
+        },
+        eventData: eventMessage.payload,
       },
     );
   }
 
-  private handleMapChangeEvent(socket: Socket, payload: MapChangeEventPayload) {
+  private handleMapChangeEvent(socket: Socket, eventMessage: ISocketEventMessage<MapChangeEventPayload>) {
     const clientConfig = this.clients.get(socket)?.config;
     if (!clientConfig) return;
 
     const { id, discordChatWebhookUrl, discordChatChannelId } = clientConfig;
-    const { name } = payload;
-
     if (!discordChatChannelId || !discordChatWebhookUrl) return;
 
     this.discordServiceClient.emit<void, DiscordSendMapChangeMessagePayload>(
       DISCORD_SEND_MAP_CHANGE_MESSAGE_WEBHOOK_CMD,
       {
-        url: discordChatWebhookUrl,
-        channelId: discordChatChannelId,
-        serverId: id,
-        mapName: name,
+        discordData: {
+          url: discordChatWebhookUrl,
+          channelId: discordChatChannelId,
+          serverId: id,
+        },
+        eventData: eventMessage.payload,
       },
     );
   }
 
-  private handleAnticheatNotificationEvent(socket: Socket, payload: AnticheatNotificationEventPayload) {
+  private handleAnticheatNotificationEvent(
+    socket: Socket,
+    eventMessage: ISocketEventMessage<AnticheatNotificationEventPayload>,
+  ) {
     const clientConfig = this.clients.get(socket)?.config;
     if (!clientConfig) return;
 
     const { id, discordAnticheatChannelId, discordAnticheatWebhookUrl } = clientConfig;
-    const { authId, name, map, track, message } = payload;
-
     if (!discordAnticheatChannelId || !discordAnticheatWebhookUrl) return;
 
     this.discordServiceClient.emit<void, DiscordSendAnticheatNotificationPayload>(
       DISCORD_SEND_ANTICHEAT_NOTIFICATION_WEBHOOK_CMD,
       {
-        url: discordAnticheatWebhookUrl,
-        channelId: discordAnticheatChannelId,
-        serverId: id,
-        authId,
-        playerName: name,
-        mapName: map,
-        track,
-        message,
+        discordData: {
+          url: discordAnticheatWebhookUrl,
+          channelId: discordAnticheatChannelId,
+          serverId: id,
+        },
+        eventData: eventMessage.payload,
       },
     );
   }
 
-  private handleRecordNotificationEvent(socket: Socket, payload: RecordNotificationEventPayload) {
+  private handleRecordNotificationEvent(
+    socket: Socket,
+    eventMessage: ISocketEventMessage<RecordNotificationEventPayload>,
+  ) {
     const clientConfig = this.clients.get(socket)?.config;
     if (!clientConfig) return;
 
     const { id, discordRecordsChannelId, discordRecordsWebhookUrl } = clientConfig;
-    const { name1, name2, map, time, oldWR, track, style } = payload;
-
     if (!discordRecordsChannelId || !discordRecordsWebhookUrl) return;
 
     this.discordServiceClient.emit<void, DiscordSendRecordNotificationPayload>(
       DISCORD_SEND_RECORD_NOTIFICATION_WEBHOOK_CMD,
       {
-        url: discordRecordsWebhookUrl,
-        channelId: discordRecordsWebhookUrl,
-        serverId: id,
-        playerName1: name1,
-        playerName2: name2,
-        mapName: map,
-        time,
-        oldWR,
-        track,
-        style,
+        discordData: {
+          url: discordRecordsWebhookUrl,
+          channelId: discordRecordsWebhookUrl,
+          serverId: id,
+        },
+        eventData: eventMessage.payload,
       },
     );
   }

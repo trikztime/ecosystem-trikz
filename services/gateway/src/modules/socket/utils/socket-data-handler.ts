@@ -1,8 +1,8 @@
 import { Socket } from "net";
 
-import { ISocketMessageEvent } from "../types";
+import { ISocketEventMessage } from "../types";
 
-export type OnMessageCompleteCallback = (message: ISocketMessageEvent) => void;
+export type OnMessageCompleteCallback = (message: ISocketEventMessage) => void;
 
 const HEADER_LENGTH = 4;
 
@@ -91,7 +91,7 @@ export class SocketDataHandler {
       const data = JSON.parse(message);
 
       // TODO перенести в сервис определение структуры сообщения
-      const messageEvent: ISocketMessageEvent = {
+      const messageEvent: ISocketEventMessage = {
         socket,
         event: data.event,
         payload: data.payload || "",

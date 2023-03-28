@@ -12,8 +12,10 @@ export interface ISocketClientInfo {
   config: ServerConfig;
 }
 
-export interface ISocketMessageEvent {
-  socket: Socket;
+export interface ISocketEventMessage<T = unknown> {
+  socket?: Socket;
   event: number;
-  payload: unknown;
+  payload: T;
 }
+
+export type BroadcastClientCheck = (info: ISocketClientInfo) => boolean;

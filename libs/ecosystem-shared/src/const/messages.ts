@@ -1,3 +1,34 @@
+import {
+  AnticheatNotificationEventPayload,
+  ChatMessageEventPayload,
+  MapChangeEventPayload,
+  PlayerConnectEventPayload,
+  PlayerDisconnectEventPayload,
+  RecordNotificationEventPayload,
+} from "./socketEvents";
+
+/* отправка события в дискорд через вебхук */
+type DiscordWebhookEventPayload<T> = {
+  discordData: {
+    url: string;
+    channelId: string;
+    serverId: string;
+  };
+  eventData: T;
+};
+
+/* получение события из канала дискорда */
+type DiscordChannelEventPayload<T> = {
+  discordData: {
+    channelId: string;
+  };
+  eventData: T;
+};
+
+/* gateway */
+export const GATEWAY_SOCKET_EMIT_DISCORD_CHAT_MESSAGE_EVENT_CMD = "socketEmitDiscordChatMessageEvent";
+export type GatewaySocketEmitChatMessageEventPayload = DiscordChannelEventPayload<ChatMessageEventPayload>;
+
 /* api */
 export const API_GET_RECORDS_CMD = "getRecords";
 export type ApiGetRecordsMessagePayload = {
@@ -25,53 +56,20 @@ export type SkillrankRecalculateMapPayload = {
 };
 
 /* discord */
-export type DiscordCommonWebhookActionPayload = {
-  url: string;
-  channelId: string;
-  serverId: string;
-};
-
 export const DISCORD_SEND_GAME_CHAT_MESSAGE_WEBHOOK_CMD = "sendGameChatMessageWebhook";
-export type DiscordSendGameChatMessagePayload = DiscordCommonWebhookActionPayload & {
-  authId: string;
-  name: string;
-  message: string;
-};
+export type DiscordSendGameChatMessagePayload = DiscordWebhookEventPayload<ChatMessageEventPayload>;
 
 export const DISCORD_SEND_PLAYER_CONNECT_MESSAGE_WEBHOOK_CMD = "sendPlayerConnectMessageWebhook";
-export type DiscordSendPlayerConnectMessagePayload = DiscordCommonWebhookActionPayload & {
-  authId: string;
-  name: string;
-};
+export type DiscordSendPlayerConnectMessagePayload = DiscordWebhookEventPayload<PlayerConnectEventPayload>;
 
 export const DISCORD_SEND_PLAYER_DISCONNECT_MESSAGE_WEBHOOK_CMD = "sendPlayerDisonnectMessageWebhook";
-export type DiscordSendPlayerDisconnectMessagePayload = DiscordCommonWebhookActionPayload & {
-  authId: string;
-  name: string;
-  reason: string;
-};
+export type DiscordSendPlayerDisconnectMessagePayload = DiscordWebhookEventPayload<PlayerDisconnectEventPayload>;
 
 export const DISCORD_SEND_MAP_CHANGE_MESSAGE_WEBHOOK_CMD = "sendMapChangeMessageWebhook";
-export type DiscordSendMapChangeMessagePayload = DiscordCommonWebhookActionPayload & {
-  mapName: string;
-};
+export type DiscordSendMapChangeMessagePayload = DiscordWebhookEventPayload<MapChangeEventPayload>;
 
 export const DISCORD_SEND_ANTICHEAT_NOTIFICATION_WEBHOOK_CMD = "sendAnticheatNotificationWebhook";
-export type DiscordSendAnticheatNotificationPayload = DiscordCommonWebhookActionPayload & {
-  authId: string;
-  playerName: string;
-  mapName: string;
-  track: number;
-  message: string;
-};
+export type DiscordSendAnticheatNotificationPayload = DiscordWebhookEventPayload<AnticheatNotificationEventPayload>;
 
 export const DISCORD_SEND_RECORD_NOTIFICATION_WEBHOOK_CMD = "sendRecordNotificationWebhook";
-export type DiscordSendRecordNotificationPayload = DiscordCommonWebhookActionPayload & {
-  playerName1: string;
-  playerName2: string;
-  mapName: string;
-  time: number;
-  oldWR: number;
-  track: number;
-  style: number;
-};
+export type DiscordSendRecordNotificationPayload = DiscordWebhookEventPayload<RecordNotificationEventPayload>;
