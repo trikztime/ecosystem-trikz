@@ -1,3 +1,4 @@
+import { EncryptedData } from "../types";
 import {
   AnticheatNotificationEventPayload,
   ChatMessageEventPayload,
@@ -10,7 +11,7 @@ import {
 /* отправка события в дискорд через вебхук */
 type DiscordWebhookEventPayload<T> = {
   discordData: {
-    url: string;
+    url: EncryptedData;
     channelId: string;
     serverId: string;
   };
@@ -26,8 +27,8 @@ type DiscordChannelEventPayload<T> = {
 };
 
 /* gateway */
-export const GATEWAY_SOCKET_EMIT_DISCORD_CHAT_MESSAGE_EVENT_CMD = "socketEmitDiscordChatMessageEvent";
-export type GatewaySocketEmitChatMessageEventPayload = DiscordChannelEventPayload<ChatMessageEventPayload>;
+export const GATEWAY_SOCKET_BROADCAST_DISCORD_CHAT_MESSAGE_EVENT_CMD = "socketBroadcastDiscordChatMessageEvent";
+export type GatewaySocketBroadcastChatMessageEventPayload = DiscordChannelEventPayload<ChatMessageEventPayload>;
 
 /* api */
 export const API_GET_RECORDS_CMD = "getRecords";

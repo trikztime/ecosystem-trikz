@@ -23,6 +23,7 @@ import {
   RecordNotificationEventPayload,
   SocketEventCodes,
 } from "@trikztime/ecosystem-shared/const";
+import { encryptString } from "@trikztime/ecosystem-shared/utils";
 import { createServer, Server, Socket } from "net";
 
 import { BroadcastClientCheck, ISocketClientInfo, ISocketEventMessage } from "./types";
@@ -33,12 +34,19 @@ const HANDSHAKE_TIMEOUT = 5000;
 
 @Injectable()
 export class SocketService {
+  private encryptionKey: string;
   private server: Server;
   private clients: Map<Socket, ISocketClientInfo | null> = new Map();
   private handshakeTimeouts: Map<Socket, NodeJS.Timeout> = new Map();
   private clientSocketDataHandlers: Map<Socket, SocketDataHandler> = new Map();
 
   constructor(@Inject(configService.config?.discord.serviceToken) private discordServiceClient: ClientProxy) {
+    if (!configService.config?.tempDataEncryptionKey) {
+      throw new Error("Encryption Key is not set");
+    }
+
+    this.encryptionKey = configService.config.tempDataEncryptionKey;
+
     this.clients.clear();
     this.handshakeTimeouts.clear();
     this.clientSocketDataHandlers.clear();
@@ -55,7 +63,7 @@ export class SocketService {
     });
   }
 
-  broadcast(eventMessage: ISocketEventMessage, shouldSendMessage: BroadcastClientCheck) {
+  broadcast(eventMessage: ISocketEventMessage, shouldSendMessage?: BroadcastClientCheck) {
     const clientsTuple = Array.from(this.clients.entries());
     const systemMessage = this.formatEventMessage(eventMessage);
 
@@ -64,7 +72,7 @@ export class SocketService {
 
       if (!clientInfo) return;
 
-      if (shouldSendMessage(clientInfo)) {
+      if (!shouldSendMessage || shouldSendMessage(clientInfo)) {
         socket.write(systemMessage);
       }
     });
@@ -221,7 +229,7 @@ export class SocketService {
       DISCORD_SEND_GAME_CHAT_MESSAGE_WEBHOOK_CMD,
       {
         discordData: {
-          url: discordChatWebhookUrl,
+          url: encryptString(discordChatWebhookUrl, this.encryptionKey),
           channelId: discordChatChannelId,
           serverId: id,
         },
@@ -243,13 +251,15 @@ export class SocketService {
       DISCORD_SEND_PLAYER_CONNECT_MESSAGE_WEBHOOK_CMD,
       {
         discordData: {
-          url: discordChatWebhookUrl,
+          url: encryptString(discordChatWebhookUrl, this.encryptionKey),
           channelId: discordChatChannelId,
           serverId: id,
         },
         eventData: eventMessage.payload,
       },
     );
+
+    this.broadcast(eventMessage, broadcastSameChatChannelId(discordChatChannelId));
   }
 
   private handlePlayerDisconnectEvent(socket: Socket, eventMessage: ISocketEventMessage<PlayerDisconnectEventPayload>) {
@@ -263,13 +273,15 @@ export class SocketService {
       DISCORD_SEND_PLAYER_DISCONNECT_MESSAGE_WEBHOOK_CMD,
       {
         discordData: {
-          url: discordChatWebhookUrl,
+          url: encryptString(discordChatWebhookUrl, this.encryptionKey),
           channelId: discordChatChannelId,
           serverId: id,
         },
         eventData: eventMessage.payload,
       },
     );
+
+    this.broadcast(eventMessage, broadcastSameChatChannelId(discordChatChannelId));
   }
 
   private handleMapChangeEvent(socket: Socket, eventMessage: ISocketEventMessage<MapChangeEventPayload>) {
@@ -283,13 +295,15 @@ export class SocketService {
       DISCORD_SEND_MAP_CHANGE_MESSAGE_WEBHOOK_CMD,
       {
         discordData: {
-          url: discordChatWebhookUrl,
+          url: encryptString(discordChatWebhookUrl, this.encryptionKey),
           channelId: discordChatChannelId,
           serverId: id,
         },
         eventData: eventMessage.payload,
       },
     );
+
+    this.broadcast(eventMessage, broadcastSameChatChannelId(discordChatChannelId));
   }
 
   private handleAnticheatNotificationEvent(
@@ -306,7 +320,7 @@ export class SocketService {
       DISCORD_SEND_ANTICHEAT_NOTIFICATION_WEBHOOK_CMD,
       {
         discordData: {
-          url: discordAnticheatWebhookUrl,
+          url: encryptString(discordAnticheatWebhookUrl, this.encryptionKey),
           channelId: discordAnticheatChannelId,
           serverId: id,
         },
@@ -329,12 +343,14 @@ export class SocketService {
       DISCORD_SEND_RECORD_NOTIFICATION_WEBHOOK_CMD,
       {
         discordData: {
-          url: discordRecordsWebhookUrl,
+          url: encryptString(discordRecordsWebhookUrl, this.encryptionKey),
           channelId: discordRecordsWebhookUrl,
           serverId: id,
         },
         eventData: eventMessage.payload,
       },
     );
+
+    this.broadcast(eventMessage);
   }
 }

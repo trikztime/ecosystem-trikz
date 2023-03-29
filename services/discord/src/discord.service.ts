@@ -12,7 +12,7 @@ import {
   TrackCodes,
   TrackNames,
 } from "@trikztime/ecosystem-shared/const";
-import { EventQueue } from "@trikztime/ecosystem-shared/utils";
+import { decryptString, EventQueue } from "@trikztime/ecosystem-shared/utils";
 import {
   ChannelType,
   Client,
@@ -30,10 +30,17 @@ const logger = new Logger();
 
 @Injectable()
 export class DiscordService {
+  private encryptionKey: string;
   private bot: Client;
   private channelQueues: Map<string, EventQueue<void>>;
 
   constructor() {
+    if (!configService.config?.tempDataEncryptionKey) {
+      throw new Error("Encryption Key is not set");
+    }
+
+    this.encryptionKey = configService.config.tempDataEncryptionKey;
+
     this.channelQueues = new Map();
 
     this.bot = new Client({ intents: ["Guilds", "GuildMessages", "MessageContent"] });
@@ -55,19 +62,25 @@ export class DiscordService {
   }
 
   async sendGameChatMessageWebhook(payload: DiscordSendGameChatMessagePayload) {
-    const { url, serverId, authId, name, message } = payload;
+    const { discordData, eventData } = payload;
+    const { url, serverId } = discordData;
+    const { authId, name, message } = eventData;
 
+    const webhookUrl = decryptString(url, this.encryptionKey);
     const avatarURL = await inMemoryAvatarService.getAvatar(authId);
 
     // disable pings from webhooks
     const escapedMessage = message.replace("@everyone", "@everyonе").replace("@here", "@herе");
     const username = `[${serverId}] ${name}`;
-    await this.sendWebhook(url, { username, content: escapedMessage, avatarURL });
+    await this.sendWebhook(webhookUrl, { username, content: escapedMessage, avatarURL });
   }
 
   async sendPlayerConnectMessageWebhook(payload: DiscordSendPlayerConnectMessagePayload) {
-    const { url, serverId, authId, name } = payload;
+    const { discordData, eventData } = payload;
+    const { url, serverId } = discordData;
+    const { authId, name } = eventData;
 
+    const webhookUrl = decryptString(url, this.encryptionKey);
     const avatarURL = await inMemoryAvatarService.getAvatar(authId);
     const profileURL = `https://steamcommunity.com/profiles/${authId}`;
 
@@ -75,12 +88,15 @@ export class DiscordService {
       .setColor("#72ff59")
       .setAuthor({ name: `[${serverId}] ${name} - Connected to server`, iconURL: avatarURL, url: profileURL });
 
-    await this.sendWebhook(url, { embeds: [embed] });
+    await this.sendWebhook(webhookUrl, { embeds: [embed] });
   }
 
   async sendPlayerDisconnectMessageWebhook(payload: DiscordSendPlayerDisconnectMessagePayload) {
-    const { url, serverId, authId, name, reason } = payload;
+    const { discordData, eventData } = payload;
+    const { url, serverId } = discordData;
+    const { authId, name, reason } = eventData;
 
+    const webhookUrl = decryptString(url, this.encryptionKey);
     const avatarURL = await inMemoryAvatarService.getAvatar(authId);
     const profileURL = `https://steamcommunity.com/profiles/${authId}`;
 
@@ -89,21 +105,28 @@ export class DiscordService {
       .setAuthor({ name: `[${serverId}] ${name} - Disconnected from server`, iconURL: avatarURL, url: profileURL })
       .setDescription(reason);
 
-    await this.sendWebhook(url, { embeds: [embed] });
+    await this.sendWebhook(webhookUrl, { embeds: [embed] });
   }
 
   async sendMapChangeMessageWebhook(payload: DiscordSendMapChangeMessagePayload) {
-    const { url, serverId, mapName } = payload;
+    const { discordData, eventData } = payload;
+    const { url, serverId } = discordData;
+    const { name } = eventData;
 
-    const embed = new EmbedBuilder().setColor("#59ffee").setDescription(`[${serverId}] Map changed to **${mapName}**`);
+    const webhookUrl = decryptString(url, this.encryptionKey);
+    const embed = new EmbedBuilder().setColor("#59ffee").setDescription(`[${serverId}] Map changed to **${name}**`);
 
-    await this.sendWebhook(url, { embeds: [embed] });
+    await this.sendWebhook(webhookUrl, { embeds: [embed] });
   }
 
   async sendRecordNotificationWebhook(payload: DiscordSendRecordNotificationPayload) {
-    const { url, serverId, mapName, track, style, playerName1, playerName2, time, oldWR } = payload;
+    const { discordData, eventData } = payload;
+    const { url, serverId } = discordData;
+    const { map, track, style, name1, name2, time, oldWR } = eventData;
 
-    const players = track === TrackCodes.solobonus ? playerName1 : `${playerName1} & ${playerName2}`;
+    const webhookUrl = decryptString(url, this.encryptionKey);
+
+    const players = track === TrackCodes.solobonus ? name1 : `${name1} & ${name2}`;
     const escapedPlayers = players.replace("\n", "");
 
     const formattedTime = formatSeconds(time);
@@ -119,22 +142,26 @@ export class DiscordService {
       "```\n" +
       `# Style: ${styleName}\n` +
       `# Server: ${serverId}\n` +
-      `[${escapedPlayers}] finished${trackPart} <${mapName}> with time [${trimmedTime} (${trimmedDifference})]\n` +
+      `[${escapedPlayers}] finished${trackPart} <${map}> with time [${trimmedTime} (${trimmedDifference})]\n` +
       "```";
 
-    await this.sendWebhook(url, message);
+    await this.sendWebhook(webhookUrl, message);
   }
 
   async sendAnticheatNotificationWebhook(payload: DiscordSendAnticheatNotificationPayload) {
-    const { authId, playerName, mapName, track, url, message, serverId } = payload;
+    const { discordData, eventData } = payload;
+    const { url, serverId } = discordData;
+    const { authId, name, map, track, message } = eventData;
+
+    const webhookUrl = decryptString(url, this.encryptionKey);
 
     const trackName = TrackCodeNames[track] ?? "Unknown";
 
     const steamPrifile = `<https://steamcommunity.com/profiles/${authId}/>`;
 
-    const logMessage = `[${playerName}](${steamPrifile}) - ${message} @ Server: ${serverId} | ${mapName} | Track: ${trackName}`;
+    const logMessage = `[${name}](${steamPrifile}) - ${message} @ Server: ${serverId} | ${map} | Track: ${trackName}`;
 
-    await this.sendWebhook(url, logMessage);
+    await this.sendWebhook(webhookUrl, logMessage);
   }
 
   private async sendWebhook(url: string, options: string | MessagePayload | WebhookMessageCreateOptions) {

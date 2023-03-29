@@ -1,3 +1,5 @@
+import { randomBytes } from "crypto";
+
 import { IEcosystemConfig, ServerConfig } from "./types";
 
 const serverConfigPrefix = "SERVER_CONF";
@@ -35,6 +37,8 @@ class ConfigService {
     });
 
     return {
+      // нужна строка размером 32 символа
+      tempDataEncryptionKey: randomBytes(16).toString("hex"),
       steamApiKey: env.STEAM_API_KEY ?? "",
       gateway: {
         serviceToken: env.GATEWAY_SERVICE_TOKEN ?? "",
