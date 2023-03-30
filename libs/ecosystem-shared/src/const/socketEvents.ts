@@ -18,6 +18,16 @@ export const SocketEventCodes: Record<SocketEventKeys, number> = {
   recordNotification: 7,
 };
 
+export enum ChatMessageSourceKeys {
+  DISCORD = "discord",
+  SERVER = "server",
+}
+
+export const ChatMessageSourceCodes: Record<ChatMessageSourceKeys, number> = {
+  discord: 1,
+  server: 2,
+};
+
 export type HandshakeEventPayload = {
   id: string;
 };
@@ -26,7 +36,7 @@ export type ChatMessageEventPayload = {
   source: number;
   name: string;
   message: string;
-  authId: string;
+  authId?: string;
   prefix?: string;
   nameColor?: string;
 };

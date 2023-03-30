@@ -1,12 +1,16 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
+import { ClientProxy } from "@nestjs/microservices";
 import { configService } from "@trikztime/ecosystem-shared/config";
 import {
+  ChatMessageSourceCodes,
   DiscordSendAnticheatNotificationPayload,
   DiscordSendGameChatMessagePayload,
   DiscordSendMapChangeMessagePayload,
   DiscordSendPlayerConnectMessagePayload,
   DiscordSendPlayerDisconnectMessagePayload,
   DiscordSendRecordNotificationPayload,
+  GATEWAY_SOCKET_BROADCAST_DISCORD_CHAT_MESSAGE_EVENT_CMD,
+  GatewaySocketBroadcastChatMessageEventPayload,
   StyleCodeNames,
   TrackCodeNames,
   TrackCodes,
@@ -34,7 +38,7 @@ export class DiscordService {
   private bot: Client;
   private channelQueues: Map<string, EventQueue<void>>;
 
-  constructor() {
+  constructor(@Inject(configService.config?.gatewaySocket.serviceToken) private gatewayServiceClient: ClientProxy) {
     if (!configService.config?.tempDataEncryptionKey) {
       throw new Error("Encryption Key is not set");
     }
@@ -65,6 +69,8 @@ export class DiscordService {
     const { discordData, eventData } = payload;
     const { url, serverId } = discordData;
     const { authId, name, message } = eventData;
+
+    if (!authId) return;
 
     const webhookUrl = decryptString(url, this.encryptionKey);
     const avatarURL = await inMemoryAvatarService.getAvatar(authId);
@@ -178,8 +184,28 @@ export class DiscordService {
       return;
     }
 
-    const { content, author, channelId } = message;
+    const { content, author, channelId, member } = message;
     console.log("message:", channelId, author.username, content);
+
+    const authorHighestRole = member?.roles.highest;
+    const roleColor = authorHighestRole?.hexColor.toString().slice(1);
+    const nameColor = authorHighestRole?.name === "@everyone" ? "ababab" : roleColor;
+
+    this.gatewayServiceClient.emit<void, GatewaySocketBroadcastChatMessageEventPayload>(
+      GATEWAY_SOCKET_BROADCAST_DISCORD_CHAT_MESSAGE_EVENT_CMD,
+      {
+        discordData: {
+          channelId,
+        },
+        eventData: {
+          source: ChatMessageSourceCodes.discord,
+          name: author.username,
+          message: content,
+          prefix: "[Discord]",
+          nameColor,
+        },
+      },
+    );
 
     // this.sendGameChatMessageWebhook(
     //   url,

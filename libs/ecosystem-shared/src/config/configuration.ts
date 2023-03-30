@@ -1,5 +1,3 @@
-import { randomBytes } from "crypto";
-
 import { IEcosystemConfig, ServerConfig } from "./types";
 
 const serverConfigPrefix = "SERVER_CONF";
@@ -38,12 +36,12 @@ class ConfigService {
 
     return {
       // нужна строка размером 32 символа
-      tempDataEncryptionKey: randomBytes(16).toString("hex"),
+      tempDataEncryptionKey: env.TEMP_DATA_ENCRYPTION_KEY,
       steamApiKey: env.STEAM_API_KEY ?? "",
-      gateway: {
-        serviceToken: env.GATEWAY_SERVICE_TOKEN ?? "",
-        servicePort: Number(env.GATEWAY_SERVICE_PORT),
-        serviceHost: env.GATEWAY_SERVICE_HOST,
+      gatewaySocket: {
+        serviceToken: env.GATEWAY_SOCKET_SERVICE_TOKEN ?? "",
+        servicePort: Number(env.GATEWAY_SOCKET_SERVICE_PORT),
+        serviceHost: env.GATEWAY_SOCKET_SERVICE_HOST,
       },
       api: {
         serviceToken: env.API_SERVICE_TOKEN ?? "",
@@ -69,9 +67,9 @@ class ConfigService {
           discordChatChannelId: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_CHAT_CHANNEL_ID`],
           discordChatWebhookUrl: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_CHAT_WEBHOOK_URL`],
           discordAnticheatChannelId: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_ANTICHEAT_CHANNEL_ID`],
-          discordAnticheatWebhookUrl: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_ANTICHEAT_CHANNEL_ID`],
+          discordAnticheatWebhookUrl: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_ANTICHEAT_WEBHOOK_URL`],
           discordRecordsChannelId: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_RECORDS_CHANNEL_ID`],
-          discordRecordsWebhookUrl: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_RECORDS_CHANNEL_ID`],
+          discordRecordsWebhookUrl: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_RECORDS_WEBHOOK_URL`],
         };
       }),
     };

@@ -1,11 +1,13 @@
 import { Controller } from "@nestjs/common";
 import { EventPattern, Payload } from "@nestjs/microservices";
 import {
+  DISCORD_SEND_ANTICHEAT_NOTIFICATION_WEBHOOK_CMD,
   DISCORD_SEND_GAME_CHAT_MESSAGE_WEBHOOK_CMD,
   DISCORD_SEND_MAP_CHANGE_MESSAGE_WEBHOOK_CMD,
   DISCORD_SEND_PLAYER_CONNECT_MESSAGE_WEBHOOK_CMD,
   DISCORD_SEND_PLAYER_DISCONNECT_MESSAGE_WEBHOOK_CMD,
   DISCORD_SEND_RECORD_NOTIFICATION_WEBHOOK_CMD,
+  DiscordSendAnticheatNotificationPayload,
   DiscordSendGameChatMessagePayload,
   DiscordSendMapChangeMessagePayload,
   DiscordSendPlayerConnectMessagePayload,
@@ -48,5 +50,9 @@ export class DiscordController {
     this.discordService.addChannelTaskToQueue(payload.discordData.channelId, task);
   }
 
-  // TODO anticheat
+  @EventPattern(DISCORD_SEND_ANTICHEAT_NOTIFICATION_WEBHOOK_CMD)
+  async sendAnticheatNotification(@Payload() payload: DiscordSendAnticheatNotificationPayload) {
+    const task = async () => await this.discordService.sendAnticheatNotificationWebhook(payload);
+    this.discordService.addChannelTaskToQueue(payload.discordData.channelId, task);
+  }
 }

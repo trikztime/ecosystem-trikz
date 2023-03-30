@@ -17,6 +17,7 @@ export class SocketController {
   @EventPattern(GATEWAY_SOCKET_BROADCAST_DISCORD_CHAT_MESSAGE_EVENT_CMD)
   broadcastDiscordChatMessageEvent(@Payload() payload: GatewaySocketBroadcastChatMessageEventPayload) {
     const { discordData, eventData } = payload;
+
     const eventMessage: ISocketEventMessage<typeof eventData> = {
       event: SocketEventCodes.chatMessage,
       payload: eventData,

@@ -23,9 +23,9 @@ export type DiscordServiceConfig = {
 };
 
 export interface IEcosystemConfig {
-  tempDataEncryptionKey: string;
+  tempDataEncryptionKey?: string;
   steamApiKey: string;
-  gateway: CommonMicroserviceConfig;
+  gatewaySocket: CommonMicroserviceConfig;
   api: CommonMicroserviceConfig & DatabaseServiceConfig;
   skillrank: CommonMicroserviceConfig & DatabaseServiceConfig;
   discord: CommonMicroserviceConfig & DiscordServiceConfig;

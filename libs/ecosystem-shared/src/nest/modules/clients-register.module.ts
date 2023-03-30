@@ -21,7 +21,7 @@ const getMicroserviceConfig = (
 const config = configService.config;
 
 const registeredClientsModule = ClientsModule.register([
-  getMicroserviceConfig(config?.gateway, "gateway"),
+  getMicroserviceConfig(config?.gatewaySocket, "gateway-socket"),
   getMicroserviceConfig(config?.api, "api"),
   getMicroserviceConfig(config?.skillrank, "skillrank"),
   getMicroserviceConfig(config?.discord, "discord"),

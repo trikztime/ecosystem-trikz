@@ -26,7 +26,7 @@ type DiscordChannelEventPayload<T> = {
   eventData: T;
 };
 
-/* gateway */
+/* gateway socket */
 export const GATEWAY_SOCKET_BROADCAST_DISCORD_CHAT_MESSAGE_EVENT_CMD = "socketBroadcastDiscordChatMessageEvent";
 export type GatewaySocketBroadcastChatMessageEventPayload = DiscordChannelEventPayload<ChatMessageEventPayload>;
 
