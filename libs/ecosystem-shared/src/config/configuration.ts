@@ -59,7 +59,10 @@ class ConfigService {
         serviceToken: env.DISCORD_SERVICE_TOKEN ?? "",
         servicePort: Number(env.DISCORD_SERVICE_PORT),
         serviceHost: env.DISCORD_SERVICE_HOST,
+        botApplicationId: env.DISCORD_SERVICE_BOT_APPLICATION_ID ?? "",
         botToken: env.DISCORD_SERVICE_BOT_TOKEN ?? "",
+        guildId: env.DISCORD_SERVICE_GUILD_ID ?? "",
+        rconRoleId: env.DISCORD_SERVICE_RCON_ROLE_ID,
       },
       servers: Array.from(uniqueServerIndexes.values()).map((serverIndex): ServerConfig => {
         return {
@@ -70,6 +73,8 @@ class ConfigService {
           discordAnticheatWebhookUrl: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_ANTICHEAT_WEBHOOK_URL`],
           discordRecordsChannelId: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_RECORDS_CHANNEL_ID`],
           discordRecordsWebhookUrl: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_RECORDS_WEBHOOK_URL`],
+          discordRconChannelId: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_RCON_CHANNEL_ID`],
+          discordRconWebhookUrl: env[`${serverConfigPrefix}_${serverIndex}_DISCORD_RCON_WEBHOOK_URL`],
         };
       }),
     };

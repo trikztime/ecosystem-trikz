@@ -6,6 +6,7 @@ export enum SocketEventKeys {
   MAP_CHANGE = "mapChange",
   ANTICHEAT_NOTIFICATION = "anticheatNotification",
   RECORD_NOTIFICATION = "recordNotification",
+  EXECUTE_RCON_COMMAND = "executeRconCommand",
 }
 
 export const SocketEventCodes: Record<SocketEventKeys, number> = {
@@ -16,6 +17,7 @@ export const SocketEventCodes: Record<SocketEventKeys, number> = {
   mapChange: 5,
   anticheatNotification: 6,
   recordNotification: 7,
+  executeRconCommand: 8,
 };
 
 export enum ChatMessageSourceKeys {
@@ -72,4 +74,10 @@ export type RecordNotificationEventPayload = {
   oldWR: number;
   track: number;
   style: number;
+};
+
+export type ExecuteRconCommandEventPayload = {
+  channelId: string;
+  request?: string;
+  response?: string;
 };

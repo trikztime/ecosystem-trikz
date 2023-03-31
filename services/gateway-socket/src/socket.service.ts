@@ -5,17 +5,20 @@ import {
   AnticheatNotificationEventPayload,
   ChatMessageEventPayload,
   DISCORD_SEND_ANTICHEAT_NOTIFICATION_WEBHOOK_CMD,
+  DISCORD_SEND_EXECUTED_RCON_COMMAND_WEBHOOK_CMD,
   DISCORD_SEND_GAME_CHAT_MESSAGE_WEBHOOK_CMD,
   DISCORD_SEND_MAP_CHANGE_MESSAGE_WEBHOOK_CMD,
   DISCORD_SEND_PLAYER_CONNECT_MESSAGE_WEBHOOK_CMD,
   DISCORD_SEND_PLAYER_DISCONNECT_MESSAGE_WEBHOOK_CMD,
   DISCORD_SEND_RECORD_NOTIFICATION_WEBHOOK_CMD,
   DiscordSendAnticheatNotificationPayload,
+  DiscordSendExecutedRconCommandPayload,
   DiscordSendGameChatMessagePayload,
   DiscordSendMapChangeMessagePayload,
   DiscordSendPlayerConnectMessagePayload,
   DiscordSendPlayerDisconnectMessagePayload,
   DiscordSendRecordNotificationPayload,
+  ExecuteRconCommandEventPayload,
   HandshakeEventPayload,
   MapChangeEventPayload,
   PlayerConnectEventPayload,
@@ -76,6 +79,28 @@ export class SocketService {
         socket.write(systemMessage);
       }
     });
+  }
+
+  sendToOne(socket: Socket, eventMessage: ISocketEventMessage) {
+    const systemMessage = this.formatEventMessage(eventMessage);
+    socket.write(systemMessage);
+  }
+
+  emitExecuteRconCommandEvent(eventData: ExecuteRconCommandEventPayload) {
+    const { channelId } = eventData;
+
+    const eventMessage: ISocketEventMessage<typeof eventData> = {
+      event: SocketEventCodes.executeRconCommand,
+      payload: eventData,
+    };
+
+    // поиск первого сервера по rcon каналу
+    const client = Array.from(this.clients.values()).find(
+      (socket) => socket?.config.discordRconChannelId === channelId,
+    );
+    if (!client) return;
+
+    this.sendToOne(client.socket, eventMessage);
   }
 
   private deleteAllClients() {
@@ -199,6 +224,10 @@ export class SocketService {
       }
       case SocketEventCodes.recordNotification: {
         this.handleRecordNotificationEvent(socket, message as ISocketEventMessage<RecordNotificationEventPayload>);
+        break;
+      }
+      case SocketEventCodes.executeRconCommand: {
+        this.handleExecutedRconCommandEvent(socket, message as ISocketEventMessage<ExecuteRconCommandEventPayload>);
         break;
       }
     }
@@ -344,7 +373,7 @@ export class SocketService {
       {
         discordData: {
           url: encryptString(discordRecordsWebhookUrl, this.encryptionKey),
-          channelId: discordRecordsWebhookUrl,
+          channelId: discordRecordsChannelId,
           serverId: id,
         },
         eventData: eventMessage.payload,
@@ -352,5 +381,28 @@ export class SocketService {
     );
 
     this.broadcast(eventMessage);
+  }
+
+  private handleExecutedRconCommandEvent(
+    socket: Socket,
+    eventMessage: ISocketEventMessage<ExecuteRconCommandEventPayload>,
+  ) {
+    const clientConfig = this.clients.get(socket)?.config;
+    if (!clientConfig) return;
+
+    const { id, discordRconChannelId, discordRconWebhookUrl } = clientConfig;
+    if (!discordRconChannelId || !discordRconWebhookUrl) return;
+
+    this.discordServiceClient.emit<void, DiscordSendExecutedRconCommandPayload>(
+      DISCORD_SEND_EXECUTED_RCON_COMMAND_WEBHOOK_CMD,
+      {
+        discordData: {
+          url: encryptString(discordRconWebhookUrl, this.encryptionKey),
+          channelId: discordRconChannelId,
+          serverId: id,
+        },
+        eventData: eventMessage.payload,
+      },
+    );
   }
 }

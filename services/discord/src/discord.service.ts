@@ -4,6 +4,7 @@ import { configService } from "@trikztime/ecosystem-shared/config";
 import {
   ChatMessageSourceCodes,
   DiscordSendAnticheatNotificationPayload,
+  DiscordSendExecutedRconCommandPayload,
   DiscordSendGameChatMessagePayload,
   DiscordSendMapChangeMessagePayload,
   DiscordSendPlayerConnectMessagePayload,
@@ -20,12 +21,19 @@ import { decryptString, EventQueue } from "@trikztime/ecosystem-shared/utils";
 import {
   ChannelType,
   Client,
+  Collection,
   EmbedBuilder,
+  Interaction,
   Message,
   MessagePayload,
+  SlashCommandBuilder,
   WebhookClient,
   WebhookMessageCreateOptions,
 } from "discord.js";
+import fs from "fs";
+import path from "path";
+import { SlashCommand, SlashCommandExecute } from "types";
+import { deployCommands } from "utils/deploy-commands";
 import inMemoryAvatarService from "utils/in-memory-avatar-service";
 
 import { formatSeconds } from "./utils/format-seconds";
@@ -35,10 +43,13 @@ const logger = new Logger();
 @Injectable()
 export class DiscordService {
   private encryptionKey: string;
-  private bot: Client;
+  private client: Client;
+  private commands: Collection<string, SlashCommand> | null;
   private channelQueues: Map<string, EventQueue<void>>;
 
-  constructor(@Inject(configService.config?.gatewaySocket.serviceToken) private gatewayServiceClient: ClientProxy) {
+  constructor(
+    @Inject(configService.config?.gatewaySocket.serviceToken) private gatewaySocketServiceClient: ClientProxy,
+  ) {
     if (!configService.config?.tempDataEncryptionKey) {
       throw new Error("Encryption Key is not set");
     }
@@ -47,11 +58,15 @@ export class DiscordService {
 
     this.channelQueues = new Map();
 
-    this.bot = new Client({ intents: ["Guilds", "GuildMessages", "MessageContent"] });
-    this.bot.login(configService.config?.discord.botToken);
+    this.client = new Client({ intents: ["Guilds", "GuildMessages", "MessageContent"] });
+    this.client.login(configService.config?.discord.botToken);
 
-    this.bot.on("ready", (client) => logger.log(`Logged in as ${client.user.tag}`));
-    this.bot.on("messageCreate", this.handleMessageCreate.bind(this));
+    this.client.on("ready", (client) => logger.log(`Logged in as ${client.user.tag}`));
+    this.client.on("messageCreate", this.handleMessageCreate.bind(this));
+    this.client.on("interactionCreate", this.handleInteractionCreate.bind(this));
+
+    this.commands = new Collection<string, SlashCommand>();
+    this.registerCommands();
   }
 
   addChannelTaskToQueue(channelId: string, task: () => Promise<void>) {
@@ -170,6 +185,16 @@ export class DiscordService {
     await this.sendWebhook(webhookUrl, logMessage);
   }
 
+  async sendExecutedRconCommandWebhook(payload: DiscordSendExecutedRconCommandPayload) {
+    const { discordData, eventData } = payload;
+    const { url } = discordData;
+    const { request, response } = eventData;
+
+    const webhookUrl = decryptString(url, this.encryptionKey);
+    const message = `> ${request}\n${response}`;
+    await this.sendWebhook(webhookUrl, message);
+  }
+
   private async sendWebhook(url: string, options: string | MessagePayload | WebhookMessageCreateOptions) {
     try {
       const webhookClient = new WebhookClient({ url });
@@ -185,13 +210,12 @@ export class DiscordService {
     }
 
     const { content, author, channelId, member } = message;
-    console.log("message:", channelId, author.username, content);
 
     const authorHighestRole = member?.roles.highest;
     const roleColor = authorHighestRole?.hexColor.toString().slice(1);
     const nameColor = authorHighestRole?.name === "@everyone" ? "ababab" : roleColor;
 
-    this.gatewayServiceClient.emit<void, GatewaySocketBroadcastChatMessageEventPayload>(
+    this.gatewaySocketServiceClient.emit<void, GatewaySocketBroadcastChatMessageEventPayload>(
       GATEWAY_SOCKET_BROADCAST_DISCORD_CHAT_MESSAGE_EVENT_CMD,
       {
         discordData: {
@@ -242,5 +266,58 @@ export class DiscordService {
     //   track: 0,
     //   url,
     // });
+  }
+
+  private async handleInteractionCreate(interaction: Interaction) {
+    if (!interaction.isChatInputCommand()) return;
+
+    const command = this.commands?.get(interaction.commandName);
+
+    // const { channelId } = interaction;
+
+    if (!command) {
+      interaction.reply(`No command matching ${interaction.commandName} was found.`);
+      return;
+    }
+
+    try {
+      await command?.execute(interaction, { gatewaySocketServiceClient: this.gatewaySocketServiceClient });
+    } catch (error) {
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp({ content: "There was an error while executing this command!", ephemeral: true });
+      } else {
+        await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+      }
+    }
+  }
+
+  private async registerCommands() {
+    const commandsPath = path.join(__dirname, "commands");
+    const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith(".js"));
+
+    for (const file of commandFiles) {
+      const filePath = path.join(commandsPath, file);
+      const commandExport = await import(filePath);
+
+      const data = commandExport.data as SlashCommandBuilder | null;
+      const execute = commandExport.execute as SlashCommandExecute | null;
+
+      if (!data || !execute) return;
+
+      const command: SlashCommand = {
+        data,
+        execute,
+      };
+
+      this.commands?.set(command.data.name, command);
+    }
+
+    const token = configService.config?.discord.botToken;
+    const appId = configService.config?.discord.botApplicationId;
+    const guildId = configService.config?.discord.guildId;
+
+    if (token && appId && guildId && this.commands) {
+      deployCommands(token, appId, guildId, this.commands);
+    }
   }
 }

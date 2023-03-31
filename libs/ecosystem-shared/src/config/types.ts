@@ -6,6 +6,8 @@ export type ServerConfig = {
   discordAnticheatWebhookUrl?: string;
   discordRecordsChannelId?: string;
   discordRecordsWebhookUrl?: string;
+  discordRconChannelId?: string;
+  discordRconWebhookUrl?: string;
 };
 
 export type CommonMicroserviceConfig = {
@@ -19,7 +21,10 @@ export type DatabaseServiceConfig = {
 };
 
 export type DiscordServiceConfig = {
+  botApplicationId: string;
   botToken: string;
+  guildId: string;
+  rconRoleId?: string;
 };
 
 export interface IEcosystemConfig {

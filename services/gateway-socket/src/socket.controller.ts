@@ -2,7 +2,9 @@ import { Controller } from "@nestjs/common";
 import { EventPattern, Payload } from "@nestjs/microservices";
 import {
   GATEWAY_SOCKET_BROADCAST_DISCORD_CHAT_MESSAGE_EVENT_CMD,
+  GATEWAY_SOCKET_EXECUTE_RCON_COMMAND_EVENT_CMD,
   GatewaySocketBroadcastChatMessageEventPayload,
+  GatewaySocketExecuteRconCommandEventPayload,
   SocketEventCodes,
 } from "@trikztime/ecosystem-shared/const";
 
@@ -23,5 +25,12 @@ export class SocketController {
       payload: eventData,
     };
     this.socketService.broadcast(eventMessage, broadcastSameChatChannelId(discordData.channelId));
+  }
+
+  @EventPattern(GATEWAY_SOCKET_EXECUTE_RCON_COMMAND_EVENT_CMD)
+  executeRconCommandEvent(@Payload() payload: GatewaySocketExecuteRconCommandEventPayload) {
+    const { eventData } = payload;
+
+    this.socketService.emitExecuteRconCommandEvent(eventData);
   }
 }
