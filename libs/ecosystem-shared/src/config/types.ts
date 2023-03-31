@@ -23,6 +23,8 @@ export type DatabaseServiceConfig = {
 export type DiscordServiceConfig = {
   botApplicationId: string;
   botToken: string;
+  privateBotApplicationId: string;
+  privateBotToken: string;
   guildId: string;
   rconRoleId?: string;
 };

@@ -61,6 +61,8 @@ class ConfigService {
         serviceHost: env.DISCORD_SERVICE_HOST,
         botApplicationId: env.DISCORD_SERVICE_BOT_APPLICATION_ID ?? "",
         botToken: env.DISCORD_SERVICE_BOT_TOKEN ?? "",
+        privateBotApplicationId: env.DISCORD_SERVICE_PRIVATE_BOT_APPLICATION_ID ?? "",
+        privateBotToken: env.DISCORD_SERVICE_PRIVATE_BOT_TOKEN ?? "",
         guildId: env.DISCORD_SERVICE_GUILD_ID ?? "",
         rconRoleId: env.DISCORD_SERVICE_RCON_ROLE_ID,
       },

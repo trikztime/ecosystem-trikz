@@ -44,6 +44,7 @@ const logger = new Logger();
 export class DiscordService {
   private encryptionKey: string;
   private client: Client;
+  private privateClient: Client;
   private commands: Collection<string, SlashCommand> | null;
   private channelQueues: Map<string, EventQueue<void>>;
 
@@ -58,12 +59,19 @@ export class DiscordService {
 
     this.channelQueues = new Map();
 
+    // основной бот
     this.client = new Client({ intents: ["Guilds", "GuildMessages", "MessageContent"] });
     this.client.login(configService.config?.discord.botToken);
 
     this.client.on("ready", (client) => logger.log(`Logged in as ${client.user.tag}`));
     this.client.on("messageCreate", this.handleMessageCreate.bind(this));
-    this.client.on("interactionCreate", this.handleInteractionCreate.bind(this));
+
+    // бот для приватных команд
+    this.privateClient = new Client({ intents: ["Guilds", "GuildMessages"] });
+    this.privateClient.login(configService.config?.discord.privateBotToken);
+
+    this.privateClient.on("ready", (client) => logger.log(`Logged in as ${client.user.tag}`));
+    this.privateClient.on("interactionCreate", this.handleInteractionCreate.bind(this));
 
     this.commands = new Collection<string, SlashCommand>();
     this.registerCommands();
@@ -273,8 +281,6 @@ export class DiscordService {
 
     const command = this.commands?.get(interaction.commandName);
 
-    // const { channelId } = interaction;
-
     if (!command) {
       interaction.reply(`No command matching ${interaction.commandName} was found.`);
       return;
@@ -292,8 +298,19 @@ export class DiscordService {
   }
 
   private async registerCommands() {
-    const commandsPath = path.join(__dirname, "commands");
+    const privateCommands = await this.readCommandFiles("private-commands");
+
+    privateCommands.forEach((command) => {
+      this.commands?.set(command.data.name, command);
+    });
+    await this.deployPrivateCommands(privateCommands);
+  }
+
+  private async readCommandFiles(dirName: string) {
+    const commandsPath = path.join(__dirname, dirName);
     const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith(".js"));
+
+    const registeredCommands: SlashCommand[] = [];
 
     for (const file of commandFiles) {
       const filePath = path.join(commandsPath, file);
@@ -302,22 +319,26 @@ export class DiscordService {
       const data = commandExport.data as SlashCommandBuilder | null;
       const execute = commandExport.execute as SlashCommandExecute | null;
 
-      if (!data || !execute) return;
+      if (!data || !execute) continue;
 
       const command: SlashCommand = {
         data,
         execute,
       };
 
-      this.commands?.set(command.data.name, command);
+      registeredCommands.push(command);
     }
 
-    const token = configService.config?.discord.botToken;
-    const appId = configService.config?.discord.botApplicationId;
+    return registeredCommands;
+  }
+
+  private async deployPrivateCommands(commands: SlashCommand[]) {
+    const token = configService.config?.discord.privateBotToken;
+    const appId = configService.config?.discord.privateBotApplicationId;
     const guildId = configService.config?.discord.guildId;
 
-    if (token && appId && guildId && this.commands) {
-      deployCommands(token, appId, guildId, this.commands);
+    if (token && appId && guildId) {
+      deployCommands(token, appId, guildId, commands, "private");
     }
   }
 }
