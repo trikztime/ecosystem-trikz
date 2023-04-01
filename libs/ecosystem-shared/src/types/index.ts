@@ -14,3 +14,8 @@ export interface IErrorData {
 export interface IErrorResponse extends ICommonResponse<IErrorData> {
   result: "error";
 }
+
+export type EncryptedData = {
+  iv: string;
+  data: string;
+};

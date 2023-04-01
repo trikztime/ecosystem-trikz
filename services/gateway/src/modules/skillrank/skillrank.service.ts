@@ -18,14 +18,14 @@ export class SkillrankService {
 
   async recalculateMap(payload: SkillrankRecalculateMapPayload) {
     const $stream = this.skillrankServiceClient.send<true | null, SkillrankRecalculateMapPayload>(
-      { cmd: SKILLRANK_RECALCULATE_MAP_CMD },
+      SKILLRANK_RECALCULATE_MAP_CMD,
       payload,
     );
     return await lastValueFrom($stream);
   }
 
   async recalculateAll() {
-    const $stream = this.skillrankServiceClient.send<true | null>({ cmd: SKILLRANK_RECALCULATE_ALL_CMD }, {});
+    const $stream = this.skillrankServiceClient.send<true | null>(SKILLRANK_RECALCULATE_ALL_CMD, {});
     return await lastValueFrom($stream);
   }
 }

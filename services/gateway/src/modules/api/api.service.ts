@@ -20,21 +20,18 @@ export class ApiService {
   }
 
   async getRecords(payload: ApiGetRecordsMessagePayload) {
-    const $stream = this.apiServiceClient.send<RecordDTO[], ApiGetRecordsMessagePayload>(
-      { cmd: API_GET_RECORDS_CMD },
-      payload,
-    );
+    const $stream = this.apiServiceClient.send<RecordDTO[], ApiGetRecordsMessagePayload>(API_GET_RECORDS_CMD, payload);
     return await lastValueFrom($stream);
   }
 
   async getMaps() {
-    const $stream = this.apiServiceClient.send<MapDTO[]>({ cmd: API_GET_MAPS_CMD }, {});
+    const $stream = this.apiServiceClient.send<MapDTO[]>(API_GET_MAPS_CMD, {});
     return await lastValueFrom($stream);
   }
 
   async getMapByName(payload: ApiGetMapByNameMessagePayload) {
     const $stream = this.apiServiceClient.send<MapDTO | null, ApiGetMapByNameMessagePayload>(
-      { cmd: API_GET_MAP_BY_NAME_CMD },
+      API_GET_MAP_BY_NAME_CMD,
       payload,
     );
     return await lastValueFrom($stream);

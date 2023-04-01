@@ -11,12 +11,12 @@ import { SkillrankService } from "skillrank.service";
 export class SkillrankController {
   constructor(private service: SkillrankService) {}
 
-  @MessagePattern({ cmd: SKILLRANK_RECALCULATE_ALL_CMD })
+  @MessagePattern(SKILLRANK_RECALCULATE_ALL_CMD)
   async recalculateAll() {
     return this.service.recalculateAllMaps();
   }
 
-  @MessagePattern({ cmd: SKILLRANK_RECALCULATE_MAP_CMD })
+  @MessagePattern(SKILLRANK_RECALCULATE_MAP_CMD)
   async recalculateMap(@Payload() payload: SkillrankRecalculateMapPayload) {
     const { map, style } = payload;
     return this.service.recalculateMap(map, style);

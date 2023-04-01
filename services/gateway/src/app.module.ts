@@ -1,8 +1,8 @@
-import { Module } from "@nestjs/common/";
-import { ApiModule, SkillrankModule, SocketModule } from "modules";
+import { Module } from "@nestjs/common";
+import { ApiModule, SkillrankModule } from "modules";
 
 @Module({
-  imports: [ApiModule, SkillrankModule, SocketModule],
+  imports: [ApiModule, SkillrankModule],
   controllers: [],
   providers: [],
 })

@@ -1,5 +1,13 @@
-export type DatabaseConfig = {
-  databaseUrl: string;
+export type ServerConfig = {
+  id: string;
+  discordChatChannelId?: string;
+  discordChatWebhookUrl?: string;
+  discordAnticheatChannelId?: string;
+  discordAnticheatWebhookUrl?: string;
+  discordRecordsChannelId?: string;
+  discordRecordsWebhookUrl?: string;
+  discordRconChannelId?: string;
+  discordRconWebhookUrl?: string;
 };
 
 export type CommonMicroserviceConfig = {
@@ -8,12 +16,25 @@ export type CommonMicroserviceConfig = {
   servicePort: number;
 };
 
-export type ServerConfig = {
-  id: string;
+export type DatabaseServiceConfig = {
+  databaseUrl: string;
+};
+
+export type DiscordServiceConfig = {
+  botApplicationId: string;
+  botToken: string;
+  privateBotApplicationId: string;
+  privateBotToken: string;
+  guildId: string;
+  rconRoleId?: string;
 };
 
 export interface IEcosystemConfig {
-  api: CommonMicroserviceConfig & DatabaseConfig;
-  skillrank: CommonMicroserviceConfig & DatabaseConfig;
+  tempDataEncryptionKey?: string;
+  steamApiKey: string;
+  gatewaySocket: CommonMicroserviceConfig;
+  api: CommonMicroserviceConfig & DatabaseServiceConfig;
+  skillrank: CommonMicroserviceConfig & DatabaseServiceConfig;
+  discord: CommonMicroserviceConfig & DiscordServiceConfig;
   servers: ServerConfig[];
 }
