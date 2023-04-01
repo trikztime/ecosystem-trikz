@@ -6,7 +6,7 @@ import {
   MapChangeEventPayload,
   PlayerConnectEventPayload,
   PlayerDisconnectEventPayload,
-  RecordNotificationEventPayload,
+  RecordEventPayload,
 } from "./socketEvents";
 
 /* отправка события в дискорд через вебхук */
@@ -77,7 +77,7 @@ export const DISCORD_SEND_ANTICHEAT_NOTIFICATION_WEBHOOK_CMD = "sendAnticheatNot
 export type DiscordSendAnticheatNotificationPayload = DiscordWebhookEventPayload<AnticheatNotificationEventPayload>;
 
 export const DISCORD_SEND_RECORD_NOTIFICATION_WEBHOOK_CMD = "sendRecordNotificationWebhook";
-export type DiscordSendRecordNotificationPayload = DiscordWebhookEventPayload<RecordNotificationEventPayload>;
+export type DiscordSendRecordNotificationPayload = DiscordWebhookEventPayload<RecordEventPayload>;
 
 export const DISCORD_SEND_EXECUTED_RCON_COMMAND_WEBHOOK_CMD = "sendExecutedRconCommandWebhook";
 export type DiscordSendExecutedRconCommandPayload = DiscordWebhookEventPayload<ExecuteRconCommandEventPayload>;

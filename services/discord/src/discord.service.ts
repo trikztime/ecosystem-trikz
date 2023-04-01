@@ -151,7 +151,9 @@ export class DiscordService {
   async sendRecordNotificationWebhook(payload: DiscordSendRecordNotificationPayload) {
     const { discordData, eventData } = payload;
     const { url, serverId } = discordData;
-    const { map, track, style, name1, name2, time, oldWR } = eventData;
+    const { position, map, track, style, name1, name2, time, oldWR } = eventData;
+
+    if (position !== 1) return;
 
     const webhookUrl = decryptString(url, this.encryptionKey);
 
@@ -233,7 +235,7 @@ export class DiscordService {
           source: ChatMessageSourceCodes.discord,
           name: author.username,
           message: content,
-          prefix: "[Discord]",
+          prefix: "Discord",
           nameColor,
         },
       },

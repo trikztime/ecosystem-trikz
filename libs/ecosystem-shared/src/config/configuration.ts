@@ -35,6 +35,7 @@ class ConfigService {
     });
 
     return {
+      authorizedIps: env.AUTHORIZED_IPS?.split(";") ?? [],
       // нужна строка размером 32 символа
       tempDataEncryptionKey: env.TEMP_DATA_ENCRYPTION_KEY,
       steamApiKey: env.STEAM_API_KEY ?? "",

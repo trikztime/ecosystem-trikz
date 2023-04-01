@@ -23,7 +23,7 @@ import {
   MapChangeEventPayload,
   PlayerConnectEventPayload,
   PlayerDisconnectEventPayload,
-  RecordNotificationEventPayload,
+  RecordEventPayload,
   SocketEventCodes,
 } from "@trikztime/ecosystem-shared/const";
 import { encryptString } from "@trikztime/ecosystem-shared/utils";
@@ -108,10 +108,11 @@ export class SocketService {
     clients.forEach((socket) => this.deleteClientSocket(socket));
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private isClientWhitelisted(socket: Socket): boolean {
-    // TODO проверка вайтлист
-    return true;
+    const socketIp = socket.remoteAddress?.replace("::ffff:", "");
+    if (!socketIp) return false;
+
+    return configService.config?.authorizedIps.includes(socketIp) ?? false;
   }
 
   private handleConnection(socket: Socket) {
@@ -222,8 +223,8 @@ export class SocketService {
         );
         break;
       }
-      case SocketEventCodes.recordNotification: {
-        this.handleRecordNotificationEvent(socket, message as ISocketEventMessage<RecordNotificationEventPayload>);
+      case SocketEventCodes.record: {
+        this.handleRecordEvent(socket, message as ISocketEventMessage<RecordEventPayload>);
         break;
       }
       case SocketEventCodes.executeRconCommand: {
@@ -358,10 +359,7 @@ export class SocketService {
     );
   }
 
-  private handleRecordNotificationEvent(
-    socket: Socket,
-    eventMessage: ISocketEventMessage<RecordNotificationEventPayload>,
-  ) {
+  private handleRecordEvent(socket: Socket, eventMessage: ISocketEventMessage<RecordEventPayload>) {
     const clientConfig = this.clients.get(socket)?.config;
     if (!clientConfig) return;
 
