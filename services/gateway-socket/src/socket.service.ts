@@ -108,10 +108,11 @@ export class SocketService {
     clients.forEach((socket) => this.deleteClientSocket(socket));
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private isClientWhitelisted(socket: Socket): boolean {
-    // TODO проверка вайтлист
-    return true;
+    const socketIp = socket.remoteAddress?.replace("::ffff:", "");
+    if (!socketIp) return false;
+
+    return configService.config?.authorizedIps.includes(socketIp) ?? false;
   }
 
   private handleConnection(socket: Socket) {

@@ -30,6 +30,7 @@ export type DiscordServiceConfig = {
 };
 
 export interface IEcosystemConfig {
+  authorizedIps: string[];
   tempDataEncryptionKey?: string;
   steamApiKey: string;
   gatewaySocket: CommonMicroserviceConfig;
