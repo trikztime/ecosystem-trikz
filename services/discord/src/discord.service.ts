@@ -233,7 +233,7 @@ export class DiscordService {
           source: ChatMessageSourceCodes.discord,
           name: author.username,
           message: content,
-          prefix: "[Discord]",
+          prefix: "Discord",
           nameColor,
         },
       },

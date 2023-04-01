@@ -39,26 +39,33 @@ export type ChatMessageEventPayload = {
   name: string;
   message: string;
   authId?: string;
+  authId3?: number;
   prefix?: string;
   nameColor?: string;
 };
 
 export type PlayerConnectEventPayload = {
+  serverId: string;
   name: string;
   authId: string;
+  authId3: number;
 };
 
 export type PlayerDisconnectEventPayload = {
+  serverId: string;
   name: string;
   authId: string;
+  authId3: number;
   reason: string;
 };
 
 export type MapChangeEventPayload = {
+  serverId: string;
   name: string;
 };
 
 export type AnticheatNotificationEventPayload = {
+  serverId: string;
   authId: string;
   name: string;
   map: string;
@@ -67,6 +74,7 @@ export type AnticheatNotificationEventPayload = {
 };
 
 export type RecordNotificationEventPayload = {
+  serverId: string;
   name1: string;
   name2: string;
   map: string;
