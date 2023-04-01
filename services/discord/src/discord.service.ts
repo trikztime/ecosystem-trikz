@@ -238,42 +238,6 @@ export class DiscordService {
         },
       },
     );
-
-    // this.sendGameChatMessageWebhook(
-    //   url,
-    //   authId,
-    //   "Username",
-    //   "Heyyyy",
-    // );
-
-    // this.sendPlayerConnectMessageWebhook(url, authId, "Username");
-
-    // this.sendPlayerDisconnectMessageWebhook(url, authId, "Username", "Disconnected by user");
-
-    // this.sendMapChangeMessageWebhook(url, "trikz_cyrus");
-
-    // this.sendRecordNotificationWebhook({
-    //   mapName: "trikz_cyrus",
-    //   playerName1: "Player1",
-    //   playerName2: "Player2",
-    //   serverId: "Main",
-    //   oldWR: 145.1234535235,
-    //   time: 130.235235235235,
-    //   track: 1,
-    //   style: 0,
-    //   url,
-    // });
-
-    // this.sendAnticheatNotificationWebhook({
-    //   authId,
-    //   mapName: "trikz_cyrus",
-    //   message: "message",
-    //   playerName: "playername",
-    //   serverId: "Main",
-    //   style: 0,
-    //   track: 0,
-    //   url,
-    // });
   }
 
   private async handleInteractionCreate(interaction: Interaction) {
