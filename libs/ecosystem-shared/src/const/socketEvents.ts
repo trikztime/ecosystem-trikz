@@ -5,7 +5,7 @@ export enum SocketEventKeys {
   PLAYER_DISCONNECT = "playerDisconnect",
   MAP_CHANGE = "mapChange",
   ANTICHEAT_NOTIFICATION = "anticheatNotification",
-  RECORD_NOTIFICATION = "recordNotification",
+  RECORD = "record",
   EXECUTE_RCON_COMMAND = "executeRconCommand",
 }
 
@@ -16,7 +16,7 @@ export const SocketEventCodes: Record<SocketEventKeys, number> = {
   playerDisconnect: 4,
   mapChange: 5,
   anticheatNotification: 6,
-  recordNotification: 7,
+  record: 7,
   executeRconCommand: 8,
 };
 
@@ -73,8 +73,9 @@ export type AnticheatNotificationEventPayload = {
   message: string;
 };
 
-export type RecordNotificationEventPayload = {
+export type RecordEventPayload = {
   serverId: string;
+  position: number;
   name1: string;
   name2: string;
   map: string;
