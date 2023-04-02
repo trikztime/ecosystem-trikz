@@ -11,6 +11,40 @@ services:
     restart: on-failure
     command: npm run start:prod
 
+  discord:
+    container_name: discord
+    build:
+      context: ./services/discord
+      target: production
+    env_file:
+      - ./@env/main.env
+    restart: on-failure
+    command: npm run start:prod
+
+  gateway:
+    container_name: gateway
+    build:
+      context: ./services/gateway
+      target: production
+    env_file:
+      - ./@env/main.env
+    restart: on-failure
+    command: npm run start:prod
+    ports:
+      - "3000:3000"
+
+  gateway-socket:
+    container_name: gateway-socket
+    build:
+      context: ./services/gateway-socket
+      target: production
+    env_file:
+      - ./@env/main.env
+    restart: on-failure
+    command: npm run start:prod
+    ports:
+      - "5000:5000"
+
   skillrank:
     container_name: skillrank
     build:

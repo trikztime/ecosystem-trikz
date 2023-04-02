@@ -26,8 +26,10 @@ import {
   RecordEventPayload,
   SocketEventCodes,
 } from "@trikztime/ecosystem-shared/const";
+import { isDefined } from "@trikztime/ecosystem-shared/utils";
 import { encryptString } from "@trikztime/ecosystem-shared/utils";
 import { createServer, Server, Socket } from "net";
+import os from "os";
 
 import { BroadcastClientCheck, ISocketClientInfo, ISocketEventMessage } from "./types";
 import { broadcastSameChatChannelId, OnMessageCompleteCallback, SocketDataHandler } from "./utils";
@@ -61,9 +63,15 @@ export class SocketService {
 
     // TODO порт в env
     const port = 5000;
-    this.server.listen(port, () => {
-      logger.log(`Socket started at ${port}`);
-    });
+    this.server.listen(
+      {
+        host: "0.0.0.0",
+        port,
+      },
+      () => {
+        logger.log(`Socket started at ${port}`);
+      },
+    );
   }
 
   broadcast(eventMessage: ISocketEventMessage, shouldSendMessage?: BroadcastClientCheck) {
@@ -109,10 +117,26 @@ export class SocketService {
   }
 
   private isClientWhitelisted(socket: Socket): boolean {
-    const socketIp = socket.remoteAddress?.replace("::ffff:", "");
-    if (!socketIp) return false;
+    const netInterfaces = os.networkInterfaces();
+    const localAddresses = Object.values(netInterfaces)
+      .flatMap((netInterface) => {
+        const interfaceAdresses = netInterface
+          ?.map((network) => {
+            return network.address;
+          })
+          .filter(isDefined);
 
-    return configService.config?.authorizedIps.includes(socketIp) ?? false;
+        return interfaceAdresses;
+      })
+      .filter(isDefined);
+
+    const remoteIp = socket.remoteAddress?.replace("::ffff:", "");
+    const localIp = socket.localAddress?.replace("::ffff:", "");
+
+    const isAutorizedRemoteAddress = isDefined(remoteIp) && configService.config?.authorizedIps.includes(remoteIp);
+    const isAutorizedLocalAddress = isDefined(localIp) && localAddresses.includes(localIp);
+
+    return isAutorizedRemoteAddress || isAutorizedLocalAddress;
   }
 
   private handleConnection(socket: Socket) {

@@ -8,14 +8,15 @@ RUN npm install
 FROM node:alpine As build
 WORKDIR /usr/src/app
 COPY . .
-ENV NODE_ENV production
-RUN npm ci --only=production && npm cache clean --force
+RUN npm install
 RUN npm run build
 
 # prod stage
 FROM node:alpine As production
 WORKDIR /usr/src/app
+ENV NODE_ENV production
 COPY --from=build /usr/src/app/package.json ./package.json
-COPY --from=build /usr/src/app/node_modules ./node_modules
+RUN npm i --omit=dev && npm cache clean --force
 COPY --from=build /usr/src/app/dist ./dist
 COPY ./prisma ./prisma
+RUN npx prisma generate
