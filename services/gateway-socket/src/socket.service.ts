@@ -183,7 +183,7 @@ export class SocketService {
       return;
     }
 
-    logger.debug(`DATA: ${data}`);
+    // logger.debug(`DATA: ${data}`);
     const dataHandler = this.clientSocketDataHandlers.get(socket);
     dataHandler?.handleSocketData(socket, data);
   }
