@@ -10,7 +10,8 @@ export class HostGuard implements CanActivate {
     const request = ctx.getRequest<Request>();
 
     const authorizedHosts = configService.config?.authorizedIps ?? [];
-    const isAuthorized = authorizedHosts.length > 0 && authorizedHosts.includes(request.hostname);
+    const requestIp = request.ip.replace("::ffff:", "");
+    const isAuthorized = authorizedHosts.length > 0 && authorizedHosts.includes(requestIp);
 
     if (isAuthorized) {
       return true;
