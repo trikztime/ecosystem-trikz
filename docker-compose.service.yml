@@ -33,12 +33,6 @@ services:
     restart: on-failure
     command: npm run start:prod
     network_mode: host
-    # ports:
-    #   - target: 3000
-    #     published: 3000
-    #     mode: host
-    # ports:
-    #   - "3000:3000"
 
   gateway-socket:
     container_name: gateway-socket

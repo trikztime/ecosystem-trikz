@@ -13,11 +13,6 @@ export class HostGuard implements CanActivate {
     const requestIp = request.ip.replace("::ffff:", "");
     const isAuthorized = authorizedHosts.length > 0 && authorizedHosts.includes(requestIp);
 
-    console.log("ips", configService.config?.authorizedIps);
-    console.log("ip", requestIp);
-    console.log("hostname", request.hostname);
-    console.log("host", request.headers.host);
-
     if (isAuthorized) {
       return true;
     }
