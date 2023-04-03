@@ -18,3 +18,5 @@ ENV NODE_ENV production
 COPY --from=build /usr/src/app/package.json ./package.json
 RUN npm i --omit=dev && npm cache clean --force
 COPY --from=build /usr/src/app/dist ./dist
+
+EXPOSE 3000

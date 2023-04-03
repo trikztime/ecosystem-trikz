@@ -10,6 +10,7 @@ services:
       - ./@env/main.env
     restart: on-failure
     command: npm run start:prod
+    network_mode: host
 
   discord:
     container_name: discord
@@ -20,6 +21,7 @@ services:
       - ./@env/main.env
     restart: on-failure
     command: npm run start:prod
+    network_mode: host
 
   gateway:
     container_name: gateway
@@ -30,8 +32,13 @@ services:
       - ./@env/main.env
     restart: on-failure
     command: npm run start:prod
-    ports:
-      - "3000:3000"
+    network_mode: host
+    # ports:
+    #   - target: 3000
+    #     published: 3000
+    #     mode: host
+    # ports:
+    #   - "3000:3000"
 
   gateway-socket:
     container_name: gateway-socket
@@ -44,6 +51,7 @@ services:
     command: npm run start:prod
     ports:
       - "5000:5000"
+    network_mode: host
 
   skillrank:
     container_name: skillrank
@@ -54,3 +62,4 @@ services:
       - ./@env/main.env
     restart: on-failure
     command: npm run start:prod
+    network_mode: host

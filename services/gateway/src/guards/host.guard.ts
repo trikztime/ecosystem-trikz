@@ -12,7 +12,13 @@ export class HostGuard implements CanActivate {
     const authorizedHosts = configService.config?.authorizedIps ?? [];
     const isAuthorized = authorizedHosts.length > 0 && authorizedHosts.includes(request.hostname);
 
-    console.log("ips", configService.config?.authorizedIps, "hostname:", request.hostname);
+    console.log("ips", configService.config?.authorizedIps);
+    console.log("ip", request.ip);
+    console.log("hostname", request.hostname);
+    console.log("host", request.headers.host);
+    console.log("x-real-ip", request.headers["x-real-ip"]);
+    console.log("x-forwarded-for", request.headers["x-forwarded-for"]);
+    console.log("test", request.headers.test);
 
     if (isAuthorized) {
       return true;
