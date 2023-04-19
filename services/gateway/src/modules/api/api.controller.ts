@@ -3,7 +3,7 @@ import { createResponse, isDefined } from "@trikztime/ecosystem-shared/utils";
 
 import { ApiService } from "./api.service";
 
-@Controller("api/v1")
+@Controller({ path: "api", version: "1" })
 export class ApiController {
   constructor(private apiService: ApiService) {}
 

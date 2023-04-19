@@ -4,7 +4,7 @@ import { createResponse, isDefined } from "@trikztime/ecosystem-shared/utils";
 import { SkillrankService } from "./skillrank.service";
 import { RecalculateMapRequest } from "./types";
 
-@Controller("skillrank/v1")
+@Controller({ path: "skillrank", version: "1" })
 export class SkillrankController {
   constructor(private skillrankService: SkillrankService) {}
 
