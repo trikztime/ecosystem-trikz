@@ -1,15 +1,15 @@
 export type RecordDTO = {
   id: number;
-  auth: number | null;
-  auth2: number | null;
-  map: string | null;
-  time: number | null;
+  map: string;
+  time: number;
   jumps: number | null;
-  style: number | null;
-  date: number | null;
-  points: number;
   track: number;
+  style: number;
+  date: number;
+  points: number;
   completions: number | null;
+  player1: UserDTO;
+  player2: UserDTO | null;
 };
 
 export type MapDTO = {
@@ -17,4 +17,10 @@ export type MapDTO = {
   expPoints: number;
   tier: number;
   basePoints: number;
+};
+
+export type UserDTO = {
+  auth: number;
+  name: string;
+  countryCode: string | null;
 };
