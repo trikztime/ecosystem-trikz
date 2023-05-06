@@ -8,6 +8,7 @@ export type RecordDTO = {
   date: number;
   points: number;
   completions: number | null;
+  position: number;
   player1: UserDTO;
   player2: UserDTO | null;
 };

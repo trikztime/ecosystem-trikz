@@ -1,7 +1,7 @@
-import { User } from "@prisma/client";
 import { UserDTO } from "@trikztime/ecosystem-shared/dto";
+import { RawUser } from "types";
 
-export const convertPrismaUserToUser = (user: User): UserDTO => {
+export const convertRawUserToUser = (user: RawUser): UserDTO => {
   return {
     auth: user.auth,
     name: user.name ?? "<unknown>",
