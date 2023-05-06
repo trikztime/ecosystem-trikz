@@ -40,6 +40,7 @@ export type ApiGetRecordsMessagePayload = {
   map?: string;
   track?: number;
   style?: number;
+  authId?: number;
 };
 
 export const API_GET_MAPS_CMD = "getMaps";

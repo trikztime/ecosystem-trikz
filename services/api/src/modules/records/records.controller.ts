@@ -11,7 +11,7 @@ export class RecordsController {
 
   @MessagePattern(API_GET_RECORDS_CMD)
   async getRecords(@Payload() payload: ApiGetRecordsMessagePayload): Promise<RecordDTO[]> {
-    const { map, track, style } = payload;
-    return await this.recordsService.getRecords({ map, track, style });
+    const { map, track, style, authId } = payload;
+    return await this.recordsService.getRecords(map, track, style, authId);
   }
 }

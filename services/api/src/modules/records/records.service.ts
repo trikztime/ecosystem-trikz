@@ -10,12 +10,12 @@ import { convertRawRecordToRecord } from "./../../converters/record";
 export class RecordsService {
   constructor(private prismaService: PrismaService) {}
 
-  async getRecords(whereArgs: Prisma.PlayertimeFindManyArgs["where"]): Promise<RecordDTO[]> {
-    // TODO заменить на другой тип whereArgs
-    const map = whereArgs?.map;
-    const track = whereArgs?.track;
-    const style = whereArgs?.style;
-
+  async getRecords(
+    map: string | undefined,
+    track: number | undefined,
+    style: number | undefined,
+    authId: number | undefined,
+  ): Promise<RecordDTO[]> {
     const allRecords = await this.prismaService.playertime.findMany();
     const sortedAllRecords = [...allRecords].sort((a, b) => Number(a.time) - Number(b.time));
 
@@ -30,6 +30,7 @@ export class RecordsService {
         (p.map = ${map} OR ${map} IS NULL)
         AND (p.track = ${track} OR ${track} IS NULL)
         AND (p.style = ${style} OR ${style} IS NULL)
+        AND (p.auth = ${authId} OR p.auth2 = ${authId} OR ${authId} IS NULL)
     `;
 
     const rawRecords = await this.prismaService.$queryRaw<RawRecord[]>(rawRecordsQuery);

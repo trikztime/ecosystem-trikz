@@ -8,14 +8,21 @@ export class ApiController {
   constructor(private apiService: ApiService) {}
 
   @Get("record")
-  async getRecords(@Query("map") map?: string, @Query("track") track?: string, @Query("style") style?: string) {
-    const trackMumber = isDefined(track) ? Number(track) : undefined;
+  async getRecords(
+    @Query("map") map?: string,
+    @Query("track") track?: string,
+    @Query("style") style?: string,
+    @Query("authId") authId?: number,
+  ) {
+    const trackNumber = isDefined(track) ? Number(track) : undefined;
     const styleNumnber = isDefined(style) ? Number(style) : undefined;
+    const authNumber = isDefined(authId) ? Number(authId) : undefined;
 
     const records = await this.apiService.getRecords({
       map,
-      track: trackMumber,
+      track: trackNumber,
       style: styleNumnber,
+      authId: authNumber,
     });
     return createResponse("ok", records);
   }
