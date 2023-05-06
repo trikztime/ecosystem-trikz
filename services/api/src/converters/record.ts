@@ -9,6 +9,8 @@ export const convertRawRecordToRecord = (
   position: number,
   user1: RawUser,
   user2: RawUser,
+  countryCode1: string | null,
+  countryCode2: string | null,
 ): RecordDTO => {
   return {
     id: record.id,
@@ -21,7 +23,7 @@ export const convertRawRecordToRecord = (
     completions: record.completions,
     points: record.points,
     position,
-    player1: convertRawUserToUser(user1),
-    player2: record.track !== TrackCodes.solobonus ? convertRawUserToUser(user2) : null,
+    player1: convertRawUserToUser(user1, countryCode1),
+    player2: record.track !== TrackCodes.solobonus ? convertRawUserToUser(user2, countryCode2) : null,
   };
 };
