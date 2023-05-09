@@ -2,13 +2,14 @@ import { Inject, Injectable } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { configService } from "@trikztime/ecosystem-shared/config";
 import {
+  API_GET_MAP_BEST_TIMES_CMD,
   API_GET_MAP_BY_NAME_CMD,
   API_GET_MAPS_CMD,
   API_GET_RECORDS_CMD,
   ApiGetMapByNameMessagePayload,
   ApiGetRecordsMessagePayload,
 } from "@trikztime/ecosystem-shared/const";
-import { MapDTO, RecordDTO } from "@trikztime/ecosystem-shared/dto";
+import { MapBestTimeDTO, MapDTO, RecordDTO } from "@trikztime/ecosystem-shared/dto";
 import { lastValueFrom } from "rxjs";
 
 @Injectable()
@@ -21,6 +22,11 @@ export class ApiService {
 
   async getRecords(payload: ApiGetRecordsMessagePayload) {
     const $stream = this.apiServiceClient.send<RecordDTO[], ApiGetRecordsMessagePayload>(API_GET_RECORDS_CMD, payload);
+    return await lastValueFrom($stream);
+  }
+
+  async getMapBestTimes() {
+    const $stream = this.apiServiceClient.send<MapBestTimeDTO[]>(API_GET_MAP_BEST_TIMES_CMD, {});
     return await lastValueFrom($stream);
   }
 

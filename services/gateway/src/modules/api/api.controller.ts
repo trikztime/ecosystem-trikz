@@ -27,6 +27,12 @@ export class ApiController {
     return createResponse("ok", records);
   }
 
+  @Get("record/best-times")
+  async getMapBestTimes() {
+    const mapBestTimes = await this.apiService.getMapBestTimes();
+    return createResponse("ok", mapBestTimes);
+  }
+
   @Get("map")
   async getMaps() {
     const maps = await this.apiService.getMaps();

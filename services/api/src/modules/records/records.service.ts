@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
-import { RecordDTO } from "@trikztime/ecosystem-shared/dto";
+import { MapBestTimeDTO, RecordDTO } from "@trikztime/ecosystem-shared/dto";
 import { isDefined } from "@trikztime/ecosystem-shared/utils";
 import geoip from "fast-geoip";
 import { PrismaService } from "modules/prisma";
@@ -69,6 +69,29 @@ export class RecordsService {
     });
 
     return mappedRecords;
+  }
+
+  async getMapBestTimes(): Promise<MapBestTimeDTO[]> {
+    const groupedMapTimes = await this.prismaService.playertime.groupBy({
+      by: ["map", "track", "style"],
+      _min: {
+        time: true,
+      },
+    });
+
+    const mapBestTimes = groupedMapTimes
+      .map((mapTime): MapBestTimeDTO | null => {
+        const { _min, ...rest } = mapTime;
+        if (!_min.time) return null;
+
+        return {
+          ...rest,
+          time: _min.time,
+        };
+      })
+      .filter(isDefined);
+
+    return mapBestTimes;
   }
 
   private async getRecordsCountryCodesDictionary(records: RawRecord[]): Promise<Map<number, string | null>> {

@@ -25,3 +25,10 @@ export type UserDTO = {
   name: string;
   countryCode: string | null;
 };
+
+export type MapBestTimeDTO = {
+  map: string;
+  track: number;
+  style: number;
+  time: number;
+};
