@@ -35,8 +35,6 @@ model Playertime {
   jumps       Int?
   style       Int    @db.TinyInt
   date        Int?
-  // TODO нужно удалить
-  points      Float  @default(0) @db.Float
   track       Int    @default(0) @db.TinyInt
   completions Int?   @default(0) @db.SmallInt
 
