@@ -43,7 +43,6 @@ model Playertime {
   user1 User? @relation(name: "PlayertimesByUser1", fields: [auth], references: [auth], onDelete: Cascade, map: "fk_[playertimes/auth]_[users/auth]")
   user2 User? @relation(name: "PlayertimesByUser2", fields: [auth2], references: [auth], onDelete: Cascade, map: "fk_[playertimes/auth2]_[users/auth]")
 
-  @@index([auth, date, points], map: "index_[playertimes/[auth/auth2/date/points]]")
   @@index([map, style, track, time], map: "index_[playertimes/[map/style/track/time]]")
   @@index([time], map: "time")
   @@map("playertimes")
