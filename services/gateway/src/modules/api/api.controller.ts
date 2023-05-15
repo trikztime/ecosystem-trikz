@@ -7,7 +7,7 @@ import { ApiService } from "./api.service";
 export class ApiController {
   constructor(private apiService: ApiService) {}
 
-  @Get("record")
+  @Get("record/list")
   async getRecords(
     @Query("map") map?: string,
     @Query("track") track?: string,
@@ -18,7 +18,7 @@ export class ApiController {
     const styleNumnber = isDefined(style) ? Number(style) : undefined;
     const authNumber = isDefined(authId) ? Number(authId) : undefined;
 
-    const records = await this.apiService.getRecords({
+    const records = await this.apiService.getRecordsList({
       map,
       track: trackNumber,
       style: styleNumnber,
@@ -33,9 +33,9 @@ export class ApiController {
     return createResponse("ok", mapBestTimes);
   }
 
-  @Get("map")
+  @Get("map/list")
   async getMaps() {
-    const maps = await this.apiService.getMaps();
+    const maps = await this.apiService.getMapsList();
     return createResponse("ok", maps);
   }
 

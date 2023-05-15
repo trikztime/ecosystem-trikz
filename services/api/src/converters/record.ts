@@ -21,7 +21,6 @@ export const convertRawRecordToRecord = (
     style: record.style ?? StyleCodes.normal,
     date: record.date ?? 0,
     completions: record.completions,
-    points: record.points,
     position,
     player1: convertRawUserToUser(user1, countryCode1),
     player2: record.track !== TrackCodes.solobonus ? convertRawUserToUser(user2, countryCode2) : null,

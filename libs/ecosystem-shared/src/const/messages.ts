@@ -35,8 +35,8 @@ export const GATEWAY_SOCKET_EXECUTE_RCON_COMMAND_EVENT_CMD = "socketExecuteRconC
 export type GatewaySocketExecuteRconCommandEventPayload = DiscordChannelEventPayload<ExecuteRconCommandEventPayload>;
 
 /* api */
-export const API_GET_RECORDS_CMD = "getRecords";
-export type ApiGetRecordsMessagePayload = {
+export const API_GET_RECORDS_LIST_CMD = "getRecordsList";
+export type ApiGetRecordsListMessagePayload = {
   map?: string;
   track?: number;
   style?: number;
@@ -46,8 +46,8 @@ export type ApiGetRecordsMessagePayload = {
 export const API_GET_MAP_BEST_TIMES_CMD = "getMapBestTimes";
 export type ApiGetMapBestTimesPayload = null;
 
-export const API_GET_MAPS_CMD = "getMaps";
-export type ApiGetMapsMessagePayload = null;
+export const API_GET_MAPS_LIST_CMD = "getMapsList";
+export type ApiGetMapsListMessagePayload = null;
 
 export const API_GET_MAP_BY_NAME_CMD = "getMapByName";
 export type ApiGetMapByNameMessagePayload = {

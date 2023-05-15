@@ -6,7 +6,6 @@ export type RecordDTO = {
   track: number;
   style: number;
   date: number;
-  points: number;
   completions: number | null;
   position: number;
   player1: UserDTO;

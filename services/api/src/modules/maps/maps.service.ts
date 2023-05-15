@@ -5,7 +5,7 @@ import { PrismaService } from "modules/prisma";
 export class MapsService {
   constructor(private prismaService: PrismaService) {}
 
-  async getMaps() {
+  async getMapsList() {
     const maps = await this.prismaService.map.findMany();
 
     return maps;

@@ -4,10 +4,10 @@ import { configService } from "@trikztime/ecosystem-shared/config";
 import {
   API_GET_MAP_BEST_TIMES_CMD,
   API_GET_MAP_BY_NAME_CMD,
-  API_GET_MAPS_CMD,
-  API_GET_RECORDS_CMD,
+  API_GET_MAPS_LIST_CMD,
+  API_GET_RECORDS_LIST_CMD,
   ApiGetMapByNameMessagePayload,
-  ApiGetRecordsMessagePayload,
+  ApiGetRecordsListMessagePayload,
 } from "@trikztime/ecosystem-shared/const";
 import { MapBestTimeDTO, MapDTO, RecordDTO } from "@trikztime/ecosystem-shared/dto";
 import { lastValueFrom } from "rxjs";
@@ -20,8 +20,11 @@ export class ApiService {
     return true;
   }
 
-  async getRecords(payload: ApiGetRecordsMessagePayload) {
-    const $stream = this.apiServiceClient.send<RecordDTO[], ApiGetRecordsMessagePayload>(API_GET_RECORDS_CMD, payload);
+  async getRecordsList(payload: ApiGetRecordsListMessagePayload) {
+    const $stream = this.apiServiceClient.send<RecordDTO[], ApiGetRecordsListMessagePayload>(
+      API_GET_RECORDS_LIST_CMD,
+      payload,
+    );
     return await lastValueFrom($stream);
   }
 
@@ -30,8 +33,8 @@ export class ApiService {
     return await lastValueFrom($stream);
   }
 
-  async getMaps() {
-    const $stream = this.apiServiceClient.send<MapDTO[]>(API_GET_MAPS_CMD, {});
+  async getMapsList() {
+    const $stream = this.apiServiceClient.send<MapDTO[]>(API_GET_MAPS_LIST_CMD, {});
     return await lastValueFrom($stream);
   }
 
