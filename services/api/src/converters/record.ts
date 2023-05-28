@@ -2,7 +2,7 @@ import { StyleCodes, TrackCodes } from "@trikztime/ecosystem-shared/const";
 import { RecordDTO } from "@trikztime/ecosystem-shared/dto";
 import { RawRecord, RawUser } from "types";
 
-import { convertRawUserToUser } from "./user";
+import { convertRawUserToPlayer } from "./user";
 
 export const convertRawRecordToRecord = (
   record: RawRecord,
@@ -16,13 +16,11 @@ export const convertRawRecordToRecord = (
     id: record.id,
     map: record.map ?? "",
     time: record.time ?? 0.0,
-    jumps: record.jumps,
     track: record.track,
     style: record.style ?? StyleCodes.normal,
     date: record.date ?? 0,
-    completions: record.completions,
     position,
-    player1: convertRawUserToUser(user1, countryCode1),
-    player2: record.track !== TrackCodes.solobonus ? convertRawUserToUser(user2, countryCode2) : null,
+    player1: convertRawUserToPlayer(user1, countryCode1),
+    player2: record.track !== TrackCodes.solobonus ? convertRawUserToPlayer(user2, countryCode2) : null,
   };
 };

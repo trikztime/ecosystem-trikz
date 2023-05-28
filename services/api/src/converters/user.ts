@@ -1,7 +1,7 @@
-import { UserDTO } from "@trikztime/ecosystem-shared/dto";
+import { PlayerDTO } from "@trikztime/ecosystem-shared/dto";
 import { RawUser } from "types";
 
-export const convertRawUserToUser = (user: RawUser, countryCode: string | null): UserDTO => {
+export const convertRawUserToPlayer = (user: RawUser, countryCode: string | null): PlayerDTO => {
   return {
     auth: user.auth,
     name: user.name ?? "<unknown>",

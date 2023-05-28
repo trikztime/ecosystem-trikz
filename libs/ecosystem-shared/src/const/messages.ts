@@ -42,6 +42,10 @@ export type ApiGetRecordsListMessagePayload = {
   style?: number;
   authId?: number;
 };
+export const API_GET_RECORD_DETAILS_CMD = "getRecordDetails";
+export type ApiGetRecordDetailsMessagePayload = {
+  id: number;
+};
 
 export const API_GET_MAP_BEST_TIMES_CMD = "getMapBestTimes";
 export type ApiGetMapBestTimesPayload = null;
