@@ -5,11 +5,13 @@ import {
   API_GET_MAP_BEST_TIMES_CMD,
   API_GET_MAP_BY_NAME_CMD,
   API_GET_MAPS_LIST_CMD,
+  API_GET_RECORD_DETAILS_CMD,
   API_GET_RECORDS_LIST_CMD,
   ApiGetMapByNameMessagePayload,
+  ApiGetRecordDetailsMessagePayload,
   ApiGetRecordsListMessagePayload,
 } from "@trikztime/ecosystem-shared/const";
-import { MapBestTimeDTO, MapDTO, RecordDTO } from "@trikztime/ecosystem-shared/dto";
+import { MapBestTimeDTO, MapDTO, RecordDetailsDTO, RecordDTO } from "@trikztime/ecosystem-shared/dto";
 import { lastValueFrom } from "rxjs";
 
 @Injectable()
@@ -23,6 +25,14 @@ export class ApiService {
   async getRecordsList(payload: ApiGetRecordsListMessagePayload) {
     const $stream = this.apiServiceClient.send<RecordDTO[], ApiGetRecordsListMessagePayload>(
       API_GET_RECORDS_LIST_CMD,
+      payload,
+    );
+    return await lastValueFrom($stream);
+  }
+
+  async getRecordDetails(payload: ApiGetRecordDetailsMessagePayload) {
+    const $stream = this.apiServiceClient.send<RecordDetailsDTO, ApiGetRecordDetailsMessagePayload>(
+      API_GET_RECORD_DETAILS_CMD,
       payload,
     );
     return await lastValueFrom($stream);

@@ -14,7 +14,8 @@ import { MapDTO, RecordDTO } from "@trikztime/ecosystem-shared/dto";
 import { EventQueue, isDefined } from "@trikztime/ecosystem-shared/utils";
 import { PrismaService } from "modules/prisma";
 import { lastValueFrom } from "rxjs";
-import { getGroupSizes, getRecordWeightedPoints } from "utils/groups";
+import { getGroupSizes, getPlaceGroupIndex, getRecordWeightedPoints } from "utils/groups";
+import { getMapSkillPoints } from "utils/points";
 
 interface IRecalculatedSkillrank {
   auth: number;
@@ -72,6 +73,30 @@ export class SkillrankService {
     });
 
     return await taskPromise;
+  }
+
+  getRecordGroup(totalRecords: number, position: number) {
+    const groupSizes = getGroupSizes(totalRecords);
+    const groupIndex = getPlaceGroupIndex(position, groupSizes);
+
+    return groupIndex !== null ? groupIndex + 1 : null;
+  }
+
+  async getRecordPoints(totalRecords: number, position: number, map: string, style: number) {
+    const $mapInfo = this.apiServiceClient.send<MapDTO | null, ApiGetMapByNameMessagePayload>(API_GET_MAP_BY_NAME_CMD, {
+      name: map,
+    });
+    const mapInfo = await lastValueFrom($mapInfo);
+
+    if (!mapInfo) {
+      return 0;
+    }
+
+    const { tier, basePoints } = mapInfo;
+    const skillPoints = getMapSkillPoints(tier, basePoints);
+    const groupSizes = getGroupSizes(totalRecords);
+
+    return getRecordWeightedPoints(position, groupSizes, skillPoints, style);
   }
 
   private async recalculateAllTask(): Promise<true | null> {
@@ -162,7 +187,7 @@ export class SkillrankService {
   private getMappedSkillrankObjects(map: string, style: number, records: RecordDTO[], mapInfo: MapDTO) {
     const { tier, basePoints } = mapInfo;
     const groupSizes = getGroupSizes(records.length);
-    const skillPoints = tier * basePoints;
+    const skillPoints = getMapSkillPoints(tier, basePoints);
     const sortedRecords = [...records].sort((a, b) => Number(a?.time) - Number(b?.time));
 
     const recordIdToPlaceMap = new Map<number, number>();

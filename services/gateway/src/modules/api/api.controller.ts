@@ -33,6 +33,12 @@ export class ApiController {
     return createResponse("ok", mapBestTimes);
   }
 
+  @Get("record/:id")
+  async getRecordDetails(@Param("id") id: number) {
+    const recordDetails = await this.apiService.getRecordDetails({ id });
+    return createResponse("ok", recordDetails);
+  }
+
   @Get("map/list")
   async getMaps() {
     const maps = await this.apiService.getMapsList();

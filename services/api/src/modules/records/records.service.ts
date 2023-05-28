@@ -1,9 +1,18 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
+import { ClientProxy } from "@nestjs/microservices";
 import { Playertime, Prisma } from "@prisma/client";
+import { configService } from "@trikztime/ecosystem-shared/config";
+import {
+  SKILLRANK_GET_RECORD_GROUP_CMD,
+  SKILLRANK_GET_RECORD_POINTS_CMD,
+  SkillrankGetRecordGroupPayload,
+  SkillrankGetRecordPointsPayload,
+} from "@trikztime/ecosystem-shared/const";
 import { MapBestTimeDTO, RecordDetailsDTO, RecordDTO, RecordSkillRankDTO } from "@trikztime/ecosystem-shared/dto";
 import { isDefined } from "@trikztime/ecosystem-shared/utils";
 import geoip from "fast-geoip";
 import { PrismaService } from "modules/prisma";
+import { lastValueFrom } from "rxjs";
 import { RawRecord, RawUser } from "types";
 import { ipNumberToIpv4 } from "utils";
 
@@ -13,7 +22,10 @@ type CountryCodesDictionary = Map<number, string | null>;
 
 @Injectable()
 export class RecordsService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    @Inject(configService.config?.skillrank.serviceToken) private skillrankServiceClient: ClientProxy,
+    private prismaService: PrismaService,
+  ) {}
 
   async getRecords(
     map: string | undefined,
@@ -53,26 +65,41 @@ export class RecordsService {
     }
 
     const rawRecord = rawRecords[0];
+    const { map, jumps, style, completions } = rawRecord;
 
     const allRecords = await this.getAllRecords();
     const allRecordsSorted = this.sortRecordsByTime(allRecords);
 
     const topForRecord = this.getRecordsMapTop(allRecordsSorted, rawRecord.map, rawRecord.track, rawRecord.style);
     const position = topForRecord.findIndex((record) => record.id === rawRecord.id) + 1;
+    const totalPlaces = topForRecord.length;
 
     const countryCodesDictionary = await this.getRecordsCountryCodesDictionary([rawRecord]);
+
+    const $group = this.skillrankServiceClient.send<number | null, SkillrankGetRecordGroupPayload>(
+      SKILLRANK_GET_RECORD_GROUP_CMD,
+      { totalRecords: totalPlaces, position },
+    );
+    const $points = this.skillrankServiceClient.send<number, SkillrankGetRecordPointsPayload>(
+      SKILLRANK_GET_RECORD_POINTS_CMD,
+      {
+        totalRecords: totalPlaces,
+        position,
+        map,
+        style,
+      },
+    );
+
+    const [group, points] = await Promise.all([lastValueFrom($group), lastValueFrom($points)]);
 
     const [user1, user2] = this.getRecordUsers(rawRecord);
     const [countryCode1, countryCode2] = this.getRecordUsersCountryCodes(rawRecord, countryCodesDictionary);
 
     const recordDto = convertRawRecordToRecord(rawRecord, position, user1, user2, countryCode1, countryCode2);
 
-    const { jumps, completions } = rawRecord;
-    const totalPlaces = topForRecord.length;
-
     const skillRank: RecordSkillRankDTO = {
-      points: 0,
-      group: 0,
+      points,
+      group: group ?? 0,
     };
 
     return {

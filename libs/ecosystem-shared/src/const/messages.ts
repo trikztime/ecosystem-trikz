@@ -68,6 +68,20 @@ export type SkillrankRecalculateMapPayload = {
   style: number;
 };
 
+export const SKILLRANK_GET_RECORD_GROUP_CMD = "getRecordGroup";
+export type SkillrankGetRecordGroupPayload = {
+  totalRecords: number;
+  position: number;
+};
+
+export const SKILLRANK_GET_RECORD_POINTS_CMD = "getRecordPoints";
+export type SkillrankGetRecordPointsPayload = {
+  totalRecords: number;
+  position: number;
+  map: string;
+  style: number;
+};
+
 /* discord */
 export const DISCORD_SEND_GAME_CHAT_MESSAGE_WEBHOOK_CMD = "sendGameChatMessageWebhook";
 export type DiscordSendGameChatMessagePayload = DiscordWebhookEventPayload<ChatMessageEventPayload>;
