@@ -58,6 +58,14 @@ export type ApiGetMapByNameMessagePayload = {
   name: string;
 };
 
+export const API_GET_PLAYERS_LIST_CMD = "getPlayersList";
+export type ApiGetPlayersListMessagePayload = null;
+
+export const API_GET_PLAYER_BY_AUTH_CMD = "getPlayerByAuth";
+export type ApiGetPlayerByAuthMessagePayload = {
+  authId: number;
+};
+
 /* skillrank */
 export const SKILLRANK_RECALCULATE_ALL_CMD = "recalculateAll";
 export type SkillrankRecalculateAllPayload = null;

@@ -50,4 +50,16 @@ export class ApiController {
     const map = await this.apiService.getMapByName({ name });
     return createResponse("ok", map);
   }
+
+  @Get("player/list")
+  async getPlayers() {
+    const players = await this.apiService.getPlayersList();
+    return createResponse("ok", players);
+  }
+
+  @Get("player/:auth")
+  async getPlayerByAuth(@Param("auth") auth: number) {
+    const player = await this.apiService.getPlayerByAuth({ authId: auth });
+    return createResponse("ok", player);
+  }
 }
