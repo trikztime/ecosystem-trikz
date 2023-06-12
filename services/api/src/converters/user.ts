@@ -6,5 +6,6 @@ export const convertRawUserToPlayer = (user: RawUser, countryCode: string | null
     auth: user.auth,
     name: user.name ?? "<unknown>",
     countryCode,
+    lastLogin: user.lastlogin,
   };
 };
