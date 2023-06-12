@@ -10,15 +10,12 @@ import {
 } from "@trikztime/ecosystem-shared/const";
 import { MapBestTimeDTO, RecordDetailsDTO, RecordDTO, RecordSkillRankDTO } from "@trikztime/ecosystem-shared/dto";
 import { isDefined } from "@trikztime/ecosystem-shared/utils";
-import geoip from "fast-geoip";
 import { PrismaService } from "modules/prisma";
 import { lastValueFrom } from "rxjs";
 import { RawRecord, RawUser } from "types";
-import { ipNumberToIpv4 } from "utils";
+import { CountryCodesDictionary, getCountryCodesDictionary } from "utils";
 
 import { convertRawRecordToRecord } from "./../../converters/record";
-
-type CountryCodesDictionary = Map<number, string | null>;
 
 @Injectable()
 export class RecordsService {
@@ -225,22 +222,7 @@ export class RecordsService {
       .filter(isDefined);
     const uniqueIps = Array.from(new Set(recordsIps));
 
-    const queryIpsDataPromises = uniqueIps.map((ip) => {
-      return new Promise<[number, string | null]>((resolve) => {
-        const ipv4 = ipNumberToIpv4(ip);
-        geoip.lookup(ipv4).then((ipInfo) => {
-          resolve([ip, ipInfo?.country ?? null]);
-        });
-      });
-    });
-
-    const ipInfoObjects = await Promise.all(queryIpsDataPromises);
-
-    const dictionary = new Map<number, string | null>();
-    ipInfoObjects.forEach(([ip, countryCode]) => {
-      dictionary.set(ip, countryCode);
-    });
-
+    const dictionary = await getCountryCodesDictionary(uniqueIps);
     return dictionary;
   }
 }
