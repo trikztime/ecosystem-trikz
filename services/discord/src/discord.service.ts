@@ -221,6 +221,7 @@ export class DiscordService {
 
     const { content, author, channelId, member } = message;
 
+    const name = member?.nickname ?? author.username;
     const authorHighestRole = member?.roles.highest;
     const roleColor = authorHighestRole?.hexColor.toString().slice(1);
     const nameColor = authorHighestRole?.name === "@everyone" ? "ababab" : roleColor;
@@ -233,7 +234,7 @@ export class DiscordService {
         },
         eventData: {
           source: ChatMessageSourceCodes.discord,
-          name: author.username,
+          name,
           message: content,
           prefix: "Discord",
           nameColor,

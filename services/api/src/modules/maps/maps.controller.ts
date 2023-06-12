@@ -2,7 +2,7 @@ import { Controller } from "@nestjs/common";
 import { MessagePattern, Payload } from "@nestjs/microservices";
 import {
   API_GET_MAP_BY_NAME_CMD,
-  API_GET_MAPS_CMD,
+  API_GET_MAPS_LIST_CMD,
   ApiGetMapByNameMessagePayload,
 } from "@trikztime/ecosystem-shared/const";
 import { MapDTO } from "@trikztime/ecosystem-shared/dto";
@@ -13,9 +13,9 @@ import { MapsService } from "./maps.service";
 export class MapsController {
   constructor(private mapsService: MapsService) {}
 
-  @MessagePattern(API_GET_MAPS_CMD)
-  async getMaps(): Promise<MapDTO[]> {
-    return await this.mapsService.getMaps();
+  @MessagePattern(API_GET_MAPS_LIST_CMD)
+  async getMapsList(): Promise<MapDTO[]> {
+    return await this.mapsService.getMapsList();
   }
 
   @MessagePattern(API_GET_MAP_BY_NAME_CMD)

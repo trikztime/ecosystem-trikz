@@ -2,12 +2,12 @@ import { Module } from "@nestjs/common";
 import { ClientsRegisterModule } from "@trikztime/ecosystem-shared/nest";
 import { PrismaModule } from "modules/prisma";
 
-import { RecordsController } from "./records.controller";
-import { RecordsService } from "./records.service";
+import { PlayersController } from "./players.controller";
+import { PlayersService } from "./players.service";
 
 @Module({
   imports: [PrismaModule, ClientsRegisterModule],
-  controllers: [RecordsController],
-  providers: [RecordsService],
+  controllers: [PlayersController],
+  providers: [PlayersService],
 })
-export class RecordsModule {}
+export class PlayersModule {}
