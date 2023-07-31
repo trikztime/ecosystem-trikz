@@ -25,6 +25,7 @@ const registeredClientsModule = ClientsModule.register([
   getMicroserviceConfig(config?.api, "api"),
   getMicroserviceConfig(config?.skillrank, "skillrank"),
   getMicroserviceConfig(config?.discord, "discord"),
+  getMicroserviceConfig(config?.steam, "steam"),
 ]);
 
 @Module({

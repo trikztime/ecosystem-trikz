@@ -37,5 +37,6 @@ export interface IEcosystemConfig {
   api: CommonMicroserviceConfig & DatabaseServiceConfig;
   skillrank: CommonMicroserviceConfig & DatabaseServiceConfig;
   discord: CommonMicroserviceConfig & DiscordServiceConfig;
+  steam: CommonMicroserviceConfig & DatabaseServiceConfig;
   servers: ServerConfig[];
 }

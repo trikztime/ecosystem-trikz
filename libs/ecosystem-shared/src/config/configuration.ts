@@ -67,6 +67,12 @@ class ConfigService {
         guildId: env.DISCORD_SERVICE_GUILD_ID ?? "",
         rconRoleId: env.DISCORD_SERVICE_RCON_ROLE_ID,
       },
+      steam: {
+        serviceToken: env.STEAM_SERVICE_TOKEN ?? "",
+        servicePort: Number(env.STEAM_SERVICE_PORT),
+        serviceHost: env.STEAM_SERVICE_HOST,
+        databaseUrl: env.STEAM_DATABASE_URL ?? "",
+      },
       servers: Array.from(uniqueServerIndexes.values()).map((serverIndex): ServerConfig => {
         return {
           id: env[`${serverConfigPrefix}_${serverIndex}_ID`] ?? "",
