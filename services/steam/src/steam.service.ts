@@ -26,7 +26,7 @@ export class SteamService {
       }
     });
 
-    const requestedSteamIdAvatarMap = await this.requestSteamAvatars(steamIds3);
+    const requestedSteamIdAvatarMap = await this.requestSteamAvatars(steamRequestAuthIds3);
 
     const requestedSteamIdAvatarMapEntries = Object.entries(requestedSteamIdAvatarMap);
 
@@ -64,18 +64,18 @@ export class SteamService {
     return hours > 12;
   }
 
-  private async requestSteamAvatars(authIds3: number[]) {
-    if (authIds3.length > 0) {
+  private async requestSteamAvatars(steamIds3: number[]) {
+    if (steamIds3.length === 0) {
       return {};
     }
 
     const steam64ToSteam3Map = new Map<string, number>();
     const steamIdAvatarMap: Record<number, string> = {};
 
-    const steamRequestAuthIds64 = authIds3.map((authId3) => {
-      const steamId = new SteamId(`­[U:1:${authId3}]`);
-      const steamId64 = steamId.getSteamID64();
-      steam64ToSteam3Map.set(steamId64, authId3);
+    const steamRequestAuthIds64 = steamIds3.map((steamId3) => {
+      const steamIdObject = new SteamId(`[U:1:${steamId3}]`);
+      const steamId64 = steamIdObject.getSteamID64();
+      steam64ToSteam3Map.set(steamId64, steamId3);
       return steamId64;
     });
 
