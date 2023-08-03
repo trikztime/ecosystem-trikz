@@ -1,5 +1,5 @@
+import countryCodeLookup from "country-code-lookup";
 import geoip from "fast-geoip";
-import { ipNumberToIpv4 } from "utils";
 
 export type CountryCodesDictionary = Map<number, string | null>;
 
@@ -22,3 +22,12 @@ export const getCountryCodesDictionary = async (ips: number[]): Promise<CountryC
 
   return dictionary;
 };
+
+export const getCountryNameFromCode = (countryCode: string | null): string | null => {
+  if (!countryCode) return null;
+  return countryCodeLookup.byIso(countryCode)?.country ?? null;
+};
+
+function ipNumberToIpv4(ipInt: number) {
+  return (ipInt >>> 24) + "." + ((ipInt >> 16) & 255) + "." + ((ipInt >> 8) & 255) + "." + (ipInt & 255);
+}

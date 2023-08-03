@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { PlayerDTO } from "@trikztime/ecosystem-shared/dto";
 import { isDefined } from "@trikztime/ecosystem-shared/utils";
 import { PrismaService } from "modules/prisma";
-import { getCountryCodesDictionary } from "utils";
+import { getCountryCodesDictionary, getCountryNameFromCode } from "utils";
 
 @Injectable()
 export class PlayersService {
@@ -18,11 +18,13 @@ export class PlayersService {
     const players = prismaUsers.map((user): PlayerDTO => {
       const { auth, name, ip, lastlogin } = user;
       const countryCode = ip ? countryCodesDictionary.get(ip) ?? null : null;
+      const countryName = getCountryNameFromCode(countryCode);
 
       return {
         auth,
         name: name ?? "<unknown>",
-        countryCode: countryCode,
+        countryCode,
+        countryName,
         lastLogin: lastlogin,
       };
     });
@@ -43,11 +45,13 @@ export class PlayersService {
     const requiredIpArray = [ip].filter(isDefined);
     const countryCodesDictionary = await getCountryCodesDictionary(requiredIpArray);
     const countryCode = ip ? countryCodesDictionary.get(ip) ?? null : null;
+    const countryName = getCountryNameFromCode(countryCode);
 
     const player: PlayerDTO = {
       auth,
       name: name ?? "<unknown>",
       countryCode,
+      countryName,
       lastLogin: lastlogin,
     };
 

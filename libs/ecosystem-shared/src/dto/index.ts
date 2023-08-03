@@ -33,9 +33,8 @@ export type PlayerDTO = {
   auth: number;
   name: string;
   countryCode: string | null;
+  countryName: string | null;
   lastLogin: number;
-  // TODO добавить имя страны https://www.npmjs.com/package/country-code-lookup
-  // countryName: string | null;
 };
 
 export type MapBestTimeDTO = {
