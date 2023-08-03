@@ -1,8 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { configService } from "@trikztime/ecosystem-shared/config";
 import axios from "axios";
 import { PrismaService } from "modules/prisma";
 import SteamId from "steamid";
+
+const logger = new Logger();
 
 @Injectable()
 export class SteamService {
@@ -25,6 +27,27 @@ export class SteamService {
     });
 
     const requestedSteamIdAvatarMap = await this.requestSteamAvatars(steamIds3);
+
+    const requestedSteamIdAvatarMapEntries = Object.entries(requestedSteamIdAvatarMap);
+
+    if (requestedSteamIdAvatarMapEntries.length > 0) {
+      const now = new Date();
+
+      // запускаем обновление всех аватаров, без ожидания выполнения
+      Promise.all(
+        requestedSteamIdAvatarMapEntries.map(([auth3, avatarHash]) => {
+          this.prismaService.avatar.updateMany({
+            data: {
+              avatarHash,
+              updatedAt: now,
+            },
+            where: {
+              auth3: Number(auth3),
+            },
+          });
+        }),
+      );
+    }
 
     return {
       ...cachedSteamIdAvatarMap,
@@ -83,7 +106,7 @@ export class SteamService {
         });
       }
     } catch (error) {
-      // null
+      logger.error(error);
     }
 
     return steamIdAvatarMap;

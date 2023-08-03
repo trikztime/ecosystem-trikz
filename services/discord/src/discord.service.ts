@@ -18,6 +18,7 @@ import {
   TrackNames,
 } from "@trikztime/ecosystem-shared/const";
 import { decryptString, EventQueue } from "@trikztime/ecosystem-shared/utils";
+import { AvatarService } from "avatar.service";
 import {
   ChannelType,
   Client,
@@ -34,7 +35,6 @@ import fs from "fs";
 import path from "path";
 import { SlashCommand, SlashCommandExecute } from "types";
 import { deployCommands } from "utils/deploy-commands";
-import inMemoryAvatarService from "utils/in-memory-avatar-service";
 
 import { formatSeconds } from "./utils/format-seconds";
 
@@ -50,6 +50,7 @@ export class DiscordService {
 
   constructor(
     @Inject(configService.config?.gatewaySocket.serviceToken) private gatewaySocketServiceClient: ClientProxy,
+    private avatarService: AvatarService,
   ) {
     if (!configService.config?.tempDataEncryptionKey) {
       throw new Error("Encryption Key is not set");
@@ -91,12 +92,12 @@ export class DiscordService {
   async sendGameChatMessageWebhook(payload: DiscordSendGameChatMessagePayload) {
     const { discordData, eventData } = payload;
     const { url, serverId } = discordData;
-    const { authId, name, message } = eventData;
+    const { authId3, name, message } = eventData;
 
-    if (!authId) return;
+    if (!authId3) return;
 
     const webhookUrl = decryptString(url, this.encryptionKey);
-    const avatarURL = await inMemoryAvatarService.getAvatar(authId);
+    const avatarURL = await this.avatarService.getAvatar(authId3);
 
     // disable pings from webhooks
     const escapedMessage = message.replace("@everyone", "@everyonе").replace("@here", "@herе");
@@ -107,10 +108,10 @@ export class DiscordService {
   async sendPlayerConnectMessageWebhook(payload: DiscordSendPlayerConnectMessagePayload) {
     const { discordData, eventData } = payload;
     const { url, serverId } = discordData;
-    const { authId, name } = eventData;
+    const { authId, authId3, name } = eventData;
 
     const webhookUrl = decryptString(url, this.encryptionKey);
-    const avatarURL = await inMemoryAvatarService.getAvatar(authId);
+    const avatarURL = await this.avatarService.getAvatar(authId3);
     const profileURL = `https://steamcommunity.com/profiles/${authId}`;
 
     const embed = new EmbedBuilder()
@@ -123,10 +124,10 @@ export class DiscordService {
   async sendPlayerDisconnectMessageWebhook(payload: DiscordSendPlayerDisconnectMessagePayload) {
     const { discordData, eventData } = payload;
     const { url, serverId } = discordData;
-    const { authId, name, reason } = eventData;
+    const { authId, authId3, name, reason } = eventData;
 
     const webhookUrl = decryptString(url, this.encryptionKey);
-    const avatarURL = await inMemoryAvatarService.getAvatar(authId);
+    const avatarURL = await this.avatarService.getAvatar(authId3);
     const profileURL = `https://steamcommunity.com/profiles/${authId}`;
 
     const embed = new EmbedBuilder()

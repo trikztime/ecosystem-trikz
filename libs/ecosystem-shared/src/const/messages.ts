@@ -113,7 +113,7 @@ export const DISCORD_SEND_EXECUTED_RCON_COMMAND_WEBHOOK_CMD = "sendExecutedRconC
 export type DiscordSendExecutedRconCommandPayload = DiscordWebhookEventPayload<ExecuteRconCommandEventPayload>;
 
 /* steam */
-export const STEAM_GET_AUTH_AVATARS = "getAuthAvatars";
-export type SteamGetAuthAvatars = {
+export const STEAM_GET_AUTH_AVATARS_CMD = "getAuthAvatars";
+export type SteamGetAuthAvatarsPayload = {
   authIds3: number[];
 };
