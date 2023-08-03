@@ -9,6 +9,6 @@ export class SteamController {
 
   @EventPattern(STEAM_GET_AUTH_AVATARS_CMD)
   async getAuthAvatar(@Payload() payload: SteamGetAuthAvatarsPayload) {
-    return await this.steamService.getAuthAvatars(payload.authIds3);
+    return await this.steamService.getAuthAvatars(payload.steamIds3);
   }
 }

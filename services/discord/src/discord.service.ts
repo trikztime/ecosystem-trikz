@@ -113,10 +113,13 @@ export class DiscordService {
     const webhookUrl = decryptString(url, this.encryptionKey);
     const avatarURL = await this.avatarService.getAvatar(authId3);
     const profileURL = `https://steamcommunity.com/profiles/${authId}`;
+    const iconURL = avatarURL.length > 0 ? avatarURL : undefined;
 
-    const embed = new EmbedBuilder()
-      .setColor("#72ff59")
-      .setAuthor({ name: `[${serverId}] ${name} - Connected to server`, iconURL: avatarURL, url: profileURL });
+    const embed = new EmbedBuilder().setColor("#72ff59").setAuthor({
+      name: `[${serverId}] ${name} - Connected to server`,
+      iconURL,
+      url: profileURL,
+    });
 
     await this.sendWebhook(webhookUrl, { embeds: [embed] });
   }
@@ -129,10 +132,11 @@ export class DiscordService {
     const webhookUrl = decryptString(url, this.encryptionKey);
     const avatarURL = await this.avatarService.getAvatar(authId3);
     const profileURL = `https://steamcommunity.com/profiles/${authId}`;
+    const iconURL = avatarURL.length > 0 ? avatarURL : undefined;
 
     const embed = new EmbedBuilder()
       .setColor("#ff5959")
-      .setAuthor({ name: `[${serverId}] ${name} - Disconnected from server`, iconURL: avatarURL, url: profileURL })
+      .setAuthor({ name: `[${serverId}] ${name} - Disconnected from server`, iconURL, url: profileURL })
       .setDescription(reason);
 
     await this.sendWebhook(webhookUrl, { embeds: [embed] });
@@ -210,8 +214,8 @@ export class DiscordService {
     try {
       const webhookClient = new WebhookClient({ url });
       await webhookClient.send(options);
-    } catch (err) {
-      //
+    } catch (error) {
+      logger.error("sendWebhook failed: ", error);
     }
   }
 

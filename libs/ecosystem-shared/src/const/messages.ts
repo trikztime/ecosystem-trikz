@@ -115,5 +115,5 @@ export type DiscordSendExecutedRconCommandPayload = DiscordWebhookEventPayload<E
 /* steam */
 export const STEAM_GET_AUTH_AVATARS_CMD = "getAuthAvatars";
 export type SteamGetAuthAvatarsPayload = {
-  authIds3: number[];
+  steamIds3: number[];
 };

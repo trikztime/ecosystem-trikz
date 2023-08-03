@@ -12,25 +12,25 @@ export class AvatarService {
 
   constructor(@Inject(configService.config?.steam.serviceToken) private steamServiceClient: ClientProxy) {}
 
-  async getAvatar(authId3: number): Promise<string> {
+  async getAvatar(steamId3: number): Promise<string> {
     let avatarHash = "";
 
     // попытка получить аватар из кеша
-    avatarHash = this.userAvatarHashes.get(authId3) ?? "";
+    avatarHash = this.userAvatarHashes.get(steamId3) ?? "";
 
     if (!avatarHash || avatarHash.length === 0) {
       // попытка получить аватар из стим сервиса
       const $avatars = this.steamServiceClient.send<Record<number, string>, SteamGetAuthAvatarsPayload>(
         STEAM_GET_AUTH_AVATARS_CMD,
         {
-          authIds3: [Number(authId3)],
+          steamIds3: [Number(steamId3)],
         },
       );
       const avatars = await lastValueFrom($avatars);
-      const avatarHashFromSteam = avatars[authId3] as string | undefined;
+      const avatarHashFromSteam = avatars[steamId3] as string | undefined;
 
       if (avatarHashFromSteam) {
-        this.updateAuthAvatar(authId3, avatarHashFromSteam);
+        this.updateAuthAvatar(steamId3, avatarHashFromSteam);
         avatarHash = avatarHashFromSteam;
       }
     }
