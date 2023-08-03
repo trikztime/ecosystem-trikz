@@ -31,18 +31,25 @@ export class SteamService {
     const requestedSteamIdAvatarMapEntries = Object.entries(requestedSteamIdAvatarMap);
 
     if (requestedSteamIdAvatarMapEntries.length > 0) {
-      const now = new Date();
+      const updatedAt = new Date();
 
       // запускаем обновление всех аватаров, без ожидания выполнения
       Promise.all(
         requestedSteamIdAvatarMapEntries.map(([auth3, avatarHash]) => {
-          this.prismaService.avatar.updateMany({
-            data: {
+          const auth3Number = Number(auth3);
+
+          return this.prismaService.avatar.upsert({
+            create: {
+              auth3: auth3Number,
               avatarHash,
-              updatedAt: now,
+              updatedAt,
+            },
+            update: {
+              avatarHash,
+              updatedAt,
             },
             where: {
-              auth3: Number(auth3),
+              auth3: auth3Number,
             },
           });
         }),
