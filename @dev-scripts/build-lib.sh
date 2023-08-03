@@ -1,2 +1,2 @@
-cd ../libs/ecosystem-shared
-npm run build
+cd ../libs/ecosystem-shared #
+npm run build #
