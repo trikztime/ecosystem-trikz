@@ -1,7 +1,8 @@
-import { Controller, Get, Param, Query } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
 import { createResponse, isDefined } from "@trikztime/ecosystem-shared/utils";
 
 import { ApiService } from "./api.service";
+import { GetPlayerAvatarsRequest } from "./types";
 
 @Controller({ path: "api", version: "1" })
 export class ApiController {
@@ -34,8 +35,8 @@ export class ApiController {
   }
 
   @Get("record/:id")
-  async getRecordDetails(@Param("id") id: number) {
-    const recordDetails = await this.apiService.getRecordDetails({ id });
+  async getRecordDetails(@Param("id") id: string) {
+    const recordDetails = await this.apiService.getRecordDetails({ id: Number(id) });
     return createResponse("ok", recordDetails);
   }
 
@@ -58,8 +59,18 @@ export class ApiController {
   }
 
   @Get("player/:auth")
-  async getPlayerByAuth(@Param("auth") auth: number) {
-    const player = await this.apiService.getPlayerByAuth({ authId: auth });
+  async getPlayerByAuth(@Param("auth") auth: string) {
+    const player = await this.apiService.getPlayerByAuth({ authId: Number(auth) });
     return createResponse("ok", player);
+  }
+
+  @Post("player/avatars")
+  async getPlayerAvatars(@Body() body: Partial<GetPlayerAvatarsRequest>) {
+    const { steamIds3 } = body;
+
+    if (!isDefined(steamIds3)) throw new BadRequestException("Missing body properties (steamIds3)");
+
+    const result = await this.apiService.getPlayerAvatars({ steamIds3 });
+    return createResponse("ok", result);
   }
 }

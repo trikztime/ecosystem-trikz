@@ -13,13 +13,18 @@ import {
   ApiGetPlayerByAuthMessagePayload,
   ApiGetRecordDetailsMessagePayload,
   ApiGetRecordsListMessagePayload,
+  STEAM_GET_AUTH_AVATARS_CMD,
+  SteamGetAuthAvatarsPayload,
 } from "@trikztime/ecosystem-shared/const";
 import { MapBestTimeDTO, MapDTO, PlayerDTO, RecordDetailsDTO, RecordDTO } from "@trikztime/ecosystem-shared/dto";
 import { lastValueFrom } from "rxjs";
 
 @Injectable()
 export class ApiService {
-  constructor(@Inject(configService.config?.api.serviceToken) private apiServiceClient: ClientProxy) {}
+  constructor(
+    @Inject(configService.config?.api.serviceToken) private apiServiceClient: ClientProxy,
+    @Inject(configService.config?.steam.serviceToken) private steamServiceClient: ClientProxy,
+  ) {}
 
   async healthCheck() {
     return true;
@@ -67,6 +72,14 @@ export class ApiService {
   async getPlayerByAuth(payload: ApiGetPlayerByAuthMessagePayload) {
     const $stream = this.apiServiceClient.send<PlayerDTO | null, ApiGetPlayerByAuthMessagePayload>(
       API_GET_PLAYER_BY_AUTH_CMD,
+      payload,
+    );
+    return await lastValueFrom($stream);
+  }
+
+  async getPlayerAvatars(payload: SteamGetAuthAvatarsPayload) {
+    const $stream = this.steamServiceClient.send<Record<number, string>, SteamGetAuthAvatarsPayload>(
+      STEAM_GET_AUTH_AVATARS_CMD,
       payload,
     );
     return await lastValueFrom($stream);
