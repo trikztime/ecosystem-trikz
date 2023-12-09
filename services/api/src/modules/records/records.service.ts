@@ -52,6 +52,32 @@ export class RecordsService {
     return mappedRecords;
   }
 
+  async getRecordsCount(
+    map: string | undefined,
+    track: number | undefined,
+    style: number | undefined,
+    authId: number | undefined,
+  ) {
+    const count = await this.prismaService.playertime.count({
+      where: {
+        AND: [
+          {
+            OR: {
+              map,
+              track,
+              style,
+            },
+          },
+          {
+            OR: [{ auth: authId }, { auth2: authId }],
+          },
+        ],
+      },
+    });
+
+    return count;
+  }
+
   async getRecordDetails(id: number): Promise<RecordDetailsDTO | null> {
     const getRawRecordByIdQuery = this.formatGetRawRecordByIdQuery(id);
     const rawRecords = await this.prismaService.$queryRaw<RawRecord[]>(getRawRecordByIdQuery);

@@ -11,6 +11,10 @@ export class MapsService {
     return maps;
   }
 
+  async getMapsCount() {
+    return await this.prismaService.map.count();
+  }
+
   async getMapByName(name: string) {
     const map = await this.prismaService.map.findUnique({
       where: {

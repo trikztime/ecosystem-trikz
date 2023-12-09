@@ -32,6 +32,10 @@ export class PlayersService {
     return players;
   }
 
+  async getPlayersCount() {
+    return await this.prismaService.user.count();
+  }
+
   async getPlayerByAuth(authId: number) {
     const prismaUser = await this.prismaService.user.findUnique({
       where: {

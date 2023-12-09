@@ -28,6 +28,26 @@ export class ApiController {
     return createResponse("ok", records);
   }
 
+  @Get("record/count")
+  async getRecordsCount(
+    @Query("map") map?: string,
+    @Query("track") track?: string,
+    @Query("style") style?: string,
+    @Query("authId") authId?: number,
+  ) {
+    const trackNumber = isDefined(track) ? Number(track) : undefined;
+    const styleNumnber = isDefined(style) ? Number(style) : undefined;
+    const authNumber = isDefined(authId) ? Number(authId) : undefined;
+
+    const count = await this.apiService.getRecordsCount({
+      map,
+      track: trackNumber,
+      style: styleNumnber,
+      authId: authNumber,
+    });
+    return createResponse("ok", count);
+  }
+
   @Get("record/best-times")
   async getMapBestTimes() {
     const mapBestTimes = await this.apiService.getMapBestTimes();
@@ -46,6 +66,12 @@ export class ApiController {
     return createResponse("ok", maps);
   }
 
+  @Get("map/count")
+  async getMapsCount() {
+    const count = await this.apiService.getMapsCount();
+    return createResponse("ok", count);
+  }
+
   @Get("map/:name")
   async getMapByName(@Param("name") name: string) {
     const map = await this.apiService.getMapByName({ name });
@@ -56,6 +82,12 @@ export class ApiController {
   async getPlayers() {
     const players = await this.apiService.getPlayersList();
     return createResponse("ok", players);
+  }
+
+  @Get("player/count")
+  async getPlayersCount() {
+    const count = await this.apiService.getPlayersCount();
+    return createResponse("ok", count);
   }
 
   @Get("player/:auth")

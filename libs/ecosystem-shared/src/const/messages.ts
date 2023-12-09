@@ -42,6 +42,10 @@ export type ApiGetRecordsListMessagePayload = {
   style?: number;
   authId?: number;
 };
+
+export const API_GET_RECORDS_COUNT_CMD = "getRecordsCount";
+export type ApiGetRecordsCountMessagePayload = ApiGetRecordsListMessagePayload;
+
 export const API_GET_RECORD_DETAILS_CMD = "getRecordDetails";
 export type ApiGetRecordDetailsMessagePayload = {
   id: number;
@@ -53,6 +57,9 @@ export type ApiGetMapBestTimesPayload = null;
 export const API_GET_MAPS_LIST_CMD = "getMapsList";
 export type ApiGetMapsListMessagePayload = null;
 
+export const API_GET_MAPS_COUNT_CMD = "getMapsCount";
+export type ApiGetMapsCountMessagePayload = null;
+
 export const API_GET_MAP_BY_NAME_CMD = "getMapByName";
 export type ApiGetMapByNameMessagePayload = {
   name: string;
@@ -60,6 +67,9 @@ export type ApiGetMapByNameMessagePayload = {
 
 export const API_GET_PLAYERS_LIST_CMD = "getPlayersList";
 export type ApiGetPlayersListMessagePayload = null;
+
+export const API_GET_PLAYERS_COUNT = "getPlayersCount";
+export type ApiGetPlayersCountMessagePayload = null;
 
 export const API_GET_PLAYER_BY_AUTH_CMD = "getPlayerByAuth";
 export type ApiGetPlayerByAuthMessagePayload = {

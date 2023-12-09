@@ -4,14 +4,18 @@ import { configService } from "@trikztime/ecosystem-shared/config";
 import {
   API_GET_MAP_BEST_TIMES_CMD,
   API_GET_MAP_BY_NAME_CMD,
+  API_GET_MAPS_COUNT_CMD,
   API_GET_MAPS_LIST_CMD,
   API_GET_PLAYER_BY_AUTH_CMD,
+  API_GET_PLAYERS_COUNT,
   API_GET_PLAYERS_LIST_CMD,
   API_GET_RECORD_DETAILS_CMD,
+  API_GET_RECORDS_COUNT_CMD,
   API_GET_RECORDS_LIST_CMD,
   ApiGetMapByNameMessagePayload,
   ApiGetPlayerByAuthMessagePayload,
   ApiGetRecordDetailsMessagePayload,
+  ApiGetRecordsCountMessagePayload,
   ApiGetRecordsListMessagePayload,
   STEAM_GET_AUTH_AVATARS_CMD,
   SteamGetAuthAvatarsPayload,
@@ -38,6 +42,14 @@ export class ApiService {
     return await lastValueFrom($stream);
   }
 
+  async getRecordsCount(payload: ApiGetRecordsCountMessagePayload) {
+    const $stream = this.apiServiceClient.send<number, ApiGetRecordsCountMessagePayload>(
+      API_GET_RECORDS_COUNT_CMD,
+      payload,
+    );
+    return await lastValueFrom($stream);
+  }
+
   async getRecordDetails(payload: ApiGetRecordDetailsMessagePayload) {
     const $stream = this.apiServiceClient.send<RecordDetailsDTO, ApiGetRecordDetailsMessagePayload>(
       API_GET_RECORD_DETAILS_CMD,
@@ -56,6 +68,11 @@ export class ApiService {
     return await lastValueFrom($stream);
   }
 
+  async getMapsCount() {
+    const $stream = this.apiServiceClient.send<number>(API_GET_MAPS_COUNT_CMD, {});
+    return await lastValueFrom($stream);
+  }
+
   async getMapByName(payload: ApiGetMapByNameMessagePayload) {
     const $stream = this.apiServiceClient.send<MapDTO | null, ApiGetMapByNameMessagePayload>(
       API_GET_MAP_BY_NAME_CMD,
@@ -66,6 +83,11 @@ export class ApiService {
 
   async getPlayersList() {
     const $stream = this.apiServiceClient.send<PlayerDTO[]>(API_GET_PLAYERS_LIST_CMD, {});
+    return await lastValueFrom($stream);
+  }
+
+  async getPlayersCount() {
+    const $stream = this.apiServiceClient.send<number>(API_GET_PLAYERS_COUNT, {});
     return await lastValueFrom($stream);
   }
 

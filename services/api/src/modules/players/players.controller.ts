@@ -2,6 +2,7 @@ import { Controller } from "@nestjs/common";
 import { MessagePattern, Payload } from "@nestjs/microservices";
 import {
   API_GET_PLAYER_BY_AUTH_CMD,
+  API_GET_PLAYERS_COUNT,
   API_GET_PLAYERS_LIST_CMD,
   ApiGetPlayerByAuthMessagePayload,
 } from "@trikztime/ecosystem-shared/const";
@@ -16,6 +17,11 @@ export class PlayersController {
   @MessagePattern(API_GET_PLAYERS_LIST_CMD)
   async getPlayersList(): Promise<PlayerDTO[]> {
     return await this.playersService.getPlayersList();
+  }
+
+  @MessagePattern(API_GET_PLAYERS_COUNT)
+  async getPlayersCount(): Promise<number> {
+    return await this.playersService.getPlayersCount();
   }
 
   @MessagePattern(API_GET_PLAYER_BY_AUTH_CMD)
