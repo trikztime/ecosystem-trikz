@@ -226,7 +226,10 @@ export class DiscordService {
 
     const { content, author, channelId, member } = message;
 
-    const name = member?.nickname ?? author.username;
+    // использовать имя на сервере
+    // если не настроено, использовать имя профиля
+    // иначе использовать имя пользователя
+    const name = member?.nickname ?? member?.user.globalName ?? author.username;
     const authorHighestRole = member?.roles.highest;
     const roleColor = authorHighestRole?.hexColor.toString().slice(1);
     const nameColor = authorHighestRole?.name === "@everyone" ? "ababab" : roleColor;
