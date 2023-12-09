@@ -226,8 +226,8 @@ export class DiscordService {
 
     const { content, author, channelId, member } = message;
 
-    // использовать имя на сервера
-    // если не настроено (null) использовать глобальное имя профиля
+    // использовать имя на сервере
+    // если не настроено, использовать имя профиля
     // иначе использовать имя пользователя
     const name = member?.nickname ?? member?.user.globalName ?? author.username;
     const authorHighestRole = member?.roles.highest;
