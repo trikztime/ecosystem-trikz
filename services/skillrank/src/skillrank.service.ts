@@ -3,10 +3,10 @@ import { ClientProxy } from "@nestjs/microservices";
 import { configService } from "@trikztime/ecosystem-shared/config";
 import {
   API_GET_MAP_BY_NAME_CMD,
-  API_GET_MAPS_CMD,
-  API_GET_RECORDS_CMD,
+  API_GET_MAPS_LIST_CMD,
+  API_GET_RECORDS_LIST_CMD,
   ApiGetMapByNameMessagePayload,
-  ApiGetRecordsMessagePayload,
+  ApiGetRecordsListMessagePayload,
   StyleCodes,
   TrackCodes,
 } from "@trikztime/ecosystem-shared/const";
@@ -14,7 +14,8 @@ import { MapDTO, RecordDTO } from "@trikztime/ecosystem-shared/dto";
 import { EventQueue, isDefined } from "@trikztime/ecosystem-shared/utils";
 import { PrismaService } from "modules/prisma";
 import { lastValueFrom } from "rxjs";
-import { getGroupSizes, getRecordWeightedPoints } from "utils/groups";
+import { getGroupSizes, getPlaceGroupIndex, getRecordWeightedPoints } from "utils/groups";
+import { getMapSkillPoints } from "utils/points";
 
 interface IRecalculatedSkillrank {
   auth: number;
@@ -74,11 +75,38 @@ export class SkillrankService {
     return await taskPromise;
   }
 
-  private async recalculateAllTask(): Promise<true | null> {
-    const $allRecords = this.apiServiceClient.send<RecordDTO[], ApiGetRecordsMessagePayload>(API_GET_RECORDS_CMD, {
-      track: TrackCodes.main,
+  getRecordGroup(totalRecords: number, position: number) {
+    const groupSizes = getGroupSizes(totalRecords);
+    const groupIndex = getPlaceGroupIndex(position, groupSizes);
+
+    return groupIndex !== null ? groupIndex + 1 : null;
+  }
+
+  async getRecordPoints(totalRecords: number, position: number, map: string, style: number) {
+    const $mapInfo = this.apiServiceClient.send<MapDTO | null, ApiGetMapByNameMessagePayload>(API_GET_MAP_BY_NAME_CMD, {
+      name: map,
     });
-    const $allMaps = this.apiServiceClient.send<MapDTO[]>(API_GET_MAPS_CMD, {});
+    const mapInfo = await lastValueFrom($mapInfo);
+
+    if (!mapInfo) {
+      return 0;
+    }
+
+    const { tier, basePoints } = mapInfo;
+    const skillPoints = getMapSkillPoints(tier, basePoints);
+    const groupSizes = getGroupSizes(totalRecords);
+
+    return getRecordWeightedPoints(position, groupSizes, skillPoints, style);
+  }
+
+  private async recalculateAllTask(): Promise<true | null> {
+    const $allRecords = this.apiServiceClient.send<RecordDTO[], ApiGetRecordsListMessagePayload>(
+      API_GET_RECORDS_LIST_CMD,
+      {
+        track: TrackCodes.main,
+      },
+    );
+    const $allMaps = this.apiServiceClient.send<MapDTO[]>(API_GET_MAPS_LIST_CMD, {});
 
     const [records, maps] = await Promise.all([lastValueFrom($allRecords), lastValueFrom($allMaps)]);
 
@@ -119,11 +147,14 @@ export class SkillrankService {
   }
 
   private async recalculateMapTask(map: string, style: number): Promise<true | null> {
-    const $records = this.apiServiceClient.send<RecordDTO[], ApiGetRecordsMessagePayload>(API_GET_RECORDS_CMD, {
-      map,
-      style,
-      track: TrackCodes.main,
-    });
+    const $records = this.apiServiceClient.send<RecordDTO[], ApiGetRecordsListMessagePayload>(
+      API_GET_RECORDS_LIST_CMD,
+      {
+        map,
+        style,
+        track: TrackCodes.main,
+      },
+    );
     const $map = this.apiServiceClient.send<MapDTO | null, ApiGetMapByNameMessagePayload>(API_GET_MAP_BY_NAME_CMD, {
       name: map,
     });
@@ -156,7 +187,7 @@ export class SkillrankService {
   private getMappedSkillrankObjects(map: string, style: number, records: RecordDTO[], mapInfo: MapDTO) {
     const { tier, basePoints } = mapInfo;
     const groupSizes = getGroupSizes(records.length);
-    const skillPoints = tier * basePoints;
+    const skillPoints = getMapSkillPoints(tier, basePoints);
     const sortedRecords = [...records].sort((a, b) => Number(a?.time) - Number(b?.time));
 
     const recordIdToPlaceMap = new Map<number, number>();
@@ -176,8 +207,10 @@ export class SkillrankService {
       recordIdToPlaceMap.set(record.id, index + 1);
 
       // маппинг auth -> record
-      record.auth && updateAuthBestRecord(record.auth, record);
-      record.auth2 && updateAuthBestRecord(record.auth2, record);
+      const auth1 = record.player1.auth;
+      const auth2 = record.player2?.auth;
+      updateAuthBestRecord(auth1, record);
+      auth2 && updateAuthBestRecord(auth2, record);
     });
 
     const mappedSkillrank = Array.from(bestAuthRecordMap.entries())

@@ -35,19 +35,45 @@ export const GATEWAY_SOCKET_EXECUTE_RCON_COMMAND_EVENT_CMD = "socketExecuteRconC
 export type GatewaySocketExecuteRconCommandEventPayload = DiscordChannelEventPayload<ExecuteRconCommandEventPayload>;
 
 /* api */
-export const API_GET_RECORDS_CMD = "getRecords";
-export type ApiGetRecordsMessagePayload = {
+export const API_GET_RECORDS_LIST_CMD = "getRecordsList";
+export type ApiGetRecordsListMessagePayload = {
   map?: string;
   track?: number;
   style?: number;
+  authId?: number;
 };
 
-export const API_GET_MAPS_CMD = "getMaps";
-export type ApiGetMapsMessagePayload = null;
+export const API_GET_RECORDS_COUNT_CMD = "getRecordsCount";
+export type ApiGetRecordsCountMessagePayload = ApiGetRecordsListMessagePayload;
+
+export const API_GET_RECORD_DETAILS_CMD = "getRecordDetails";
+export type ApiGetRecordDetailsMessagePayload = {
+  id: number;
+};
+
+export const API_GET_MAP_BEST_TIMES_CMD = "getMapBestTimes";
+export type ApiGetMapBestTimesPayload = null;
+
+export const API_GET_MAPS_LIST_CMD = "getMapsList";
+export type ApiGetMapsListMessagePayload = null;
+
+export const API_GET_MAPS_COUNT_CMD = "getMapsCount";
+export type ApiGetMapsCountMessagePayload = null;
 
 export const API_GET_MAP_BY_NAME_CMD = "getMapByName";
 export type ApiGetMapByNameMessagePayload = {
   name: string;
+};
+
+export const API_GET_PLAYERS_LIST_CMD = "getPlayersList";
+export type ApiGetPlayersListMessagePayload = null;
+
+export const API_GET_PLAYERS_COUNT = "getPlayersCount";
+export type ApiGetPlayersCountMessagePayload = null;
+
+export const API_GET_PLAYER_BY_AUTH_CMD = "getPlayerByAuth";
+export type ApiGetPlayerByAuthMessagePayload = {
+  authId: number;
 };
 
 /* skillrank */
@@ -56,6 +82,20 @@ export type SkillrankRecalculateAllPayload = null;
 
 export const SKILLRANK_RECALCULATE_MAP_CMD = "recalculateMap";
 export type SkillrankRecalculateMapPayload = {
+  map: string;
+  style: number;
+};
+
+export const SKILLRANK_GET_RECORD_GROUP_CMD = "getRecordGroup";
+export type SkillrankGetRecordGroupPayload = {
+  totalRecords: number;
+  position: number;
+};
+
+export const SKILLRANK_GET_RECORD_POINTS_CMD = "getRecordPoints";
+export type SkillrankGetRecordPointsPayload = {
+  totalRecords: number;
+  position: number;
   map: string;
   style: number;
 };
@@ -81,3 +121,9 @@ export type DiscordSendRecordNotificationPayload = DiscordWebhookEventPayload<Re
 
 export const DISCORD_SEND_EXECUTED_RCON_COMMAND_WEBHOOK_CMD = "sendExecutedRconCommandWebhook";
 export type DiscordSendExecutedRconCommandPayload = DiscordWebhookEventPayload<ExecuteRconCommandEventPayload>;
+
+/* steam */
+export const STEAM_GET_AUTH_AVATARS_CMD = "getAuthAvatars";
+export type SteamGetAuthAvatarsPayload = {
+  steamIds3: number[];
+};

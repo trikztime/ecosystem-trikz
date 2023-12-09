@@ -57,3 +57,14 @@ services:
     restart: on-failure
     command: npm run start:prod
     network_mode: host
+
+  steam:
+    container_name: steam
+    build:
+      context: ./services/steam
+      target: production
+    env_file:
+      - ./@env/main.env
+    restart: on-failure
+    command: npm run start:prod
+    network_mode: host

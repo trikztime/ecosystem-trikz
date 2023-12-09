@@ -27,22 +27,20 @@ model User {
 }
 
 model Playertime {
-  id          Int     @id @default(autoincrement())
+  id          Int    @id @default(autoincrement())
   auth        Int?
-  auth2       Int?    @default(0)
-  map         String? @db.VarChar(128)
+  auth2       Int?   @default(0)
+  map         String @db.VarChar(128)
   time        Float?
   jumps       Int?
-  style       Int?    @db.TinyInt
+  style       Int    @db.TinyInt
   date        Int?
-  points      Float   @default(0) @db.Float
-  track       Int     @default(0) @db.TinyInt
-  completions Int?    @default(0) @db.SmallInt
+  track       Int    @default(0) @db.TinyInt
+  completions Int?   @default(0) @db.SmallInt
 
   user1 User? @relation(name: "PlayertimesByUser1", fields: [auth], references: [auth], onDelete: Cascade, map: "fk_[playertimes/auth]_[users/auth]")
   user2 User? @relation(name: "PlayertimesByUser2", fields: [auth2], references: [auth], onDelete: Cascade, map: "fk_[playertimes/auth2]_[users/auth]")
 
-  @@index([auth, date, points], map: "index_[playertimes/[auth/auth2/date/points]]")
   @@index([map, style, track, time], map: "index_[playertimes/[map/style/track/time]]")
   @@index([time], map: "time")
   @@map("playertimes")
@@ -78,6 +76,7 @@ model Experience {
 }
 
 model Map {
+  // TODO добавить id
   map        String @id @db.VarChar(128)
   expPoints  Int    @default(0) @map("exp_points")
   tier       Int    @default(0) @db.TinyInt

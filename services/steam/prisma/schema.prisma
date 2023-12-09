@@ -1,0 +1,17 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("STEAM_DATABASE_URL")
+}
+
+model Avatar {
+  auth3      Int      @id
+  avatarHash String   @map("avatar_hash") @db.VarChar(128)
+  updatedAt  DateTime @default(now()) @map("updated_at") @db.DateTime()
+
+  @@map("avatars")
+}
