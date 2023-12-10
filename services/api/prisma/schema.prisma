@@ -76,7 +76,8 @@ model Experience {
 }
 
 model Map {
-  // TODO добавить id
+  id         Int    @default(0)
+  name       String @default("") @db.VarChar(128)
   map        String @id @db.VarChar(128)
   expPoints  Int    @default(0) @map("exp_points")
   tier       Int    @default(0) @db.TinyInt
