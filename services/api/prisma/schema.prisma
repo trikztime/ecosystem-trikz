@@ -30,6 +30,7 @@ model Playertime {
   id          Int    @id @default(autoincrement())
   auth        Int?
   auth2       Int?   @default(0)
+  mapId       Int    @default(-1) @map("map_id")
   map         String @db.VarChar(128)
   time        Float?
   jumps       Int?
@@ -50,6 +51,7 @@ model LogPlayertime {
   id    Int     @id @default(autoincrement())
   auth  Int?
   auth2 Int?    @default(0)
+  mapId Int     @default(-1) @map("map_id")
   map   String? @db.VarChar(128)
   track Int?    @db.TinyInt
   style Int?    @db.TinyInt
@@ -88,6 +90,7 @@ model Map {
 
 model Mapzone {
   id            Int     @id @default(autoincrement())
+  mapId         Int     @default(-1) @map("map_id")
   map           String? @db.VarChar(128)
   type          Int?
   corner1_x     Float?  @db.Float
