@@ -6,6 +6,7 @@ import { convertRawUserToPlayer } from "./user";
 
 export const convertRawRecordToRecord = (
   record: RawRecord,
+  mapName: string,
   position: number,
   user1: RawUser,
   user2: RawUser,
@@ -14,7 +15,7 @@ export const convertRawRecordToRecord = (
 ): RecordDTO => {
   return {
     id: record.id,
-    map: record.map ?? "",
+    mapName,
     time: record.time ?? 0.0,
     track: record.track,
     style: record.style ?? StyleCodes.normal,
