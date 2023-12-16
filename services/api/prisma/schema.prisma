@@ -79,7 +79,7 @@ model Experience {
 
 model Map {
   id         Int    @id() @default(autoincrement())
-  name       String @db.VarChar(128)
+  name       String @unique @db.VarChar(128)
   expPoints  Int    @default(0) @map("exp_points")
   tier       Int    @default(0) @db.TinyInt
   basePoints Int    @default(0) @map("base_points")
