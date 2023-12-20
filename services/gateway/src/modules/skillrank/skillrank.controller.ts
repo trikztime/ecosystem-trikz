@@ -1,11 +1,9 @@
-import { BadRequestException, Body, Controller, Post, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Post } from "@nestjs/common";
 import { createResponse, isDefined } from "@trikztime/ecosystem-shared/utils";
-import { HostGuard } from "guards";
 
 import { SkillrankService } from "./skillrank.service";
 import { RecalculateMapRequest } from "./types";
 
-@UseGuards(new HostGuard())
 @Controller({ path: "skillrank", version: "1" })
 export class SkillrankController {
   constructor(private skillrankService: SkillrankService) {}
