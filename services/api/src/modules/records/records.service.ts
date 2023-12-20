@@ -39,21 +39,21 @@ export class RecordsService {
     const countryCodesDictionary = await this.getRecordsCountryCodesDictionary(rawRecords);
 
     const mappedRecords = rawRecords.map((rawRecord): RecordDTO => {
-      const topForRecord = this.getRecordsMapTop(allRecordsSorted, rawRecord.map, rawRecord.track, rawRecord.style);
+      const topForRecord = this.getRecordsMapTop(allRecordsSorted, rawRecord.mapId, rawRecord.track, rawRecord.style);
 
       const position = topForRecord.findIndex((record) => record.id === rawRecord.id) + 1;
 
       const [user1, user2] = this.getRecordUsers(rawRecord);
       const [countryCode1, countryCode2] = this.getRecordUsersCountryCodes(rawRecord, countryCodesDictionary);
 
-      return convertRawRecordToRecord(rawRecord, position, user1, user2, countryCode1, countryCode2);
+      return convertRawRecordToRecord(rawRecord, rawRecord.mapName, position, user1, user2, countryCode1, countryCode2);
     });
 
     return mappedRecords;
   }
 
   async getRecordsCount(
-    map: string | undefined,
+    mapName: string | undefined,
     track: number | undefined,
     style: number | undefined,
     authId: number | undefined,
@@ -63,7 +63,9 @@ export class RecordsService {
         AND: [
           {
             OR: {
-              map,
+              map: {
+                name: mapName,
+              },
               track,
               style,
             },
@@ -88,12 +90,12 @@ export class RecordsService {
     }
 
     const rawRecord = rawRecords[0];
-    const { map, jumps, style, completions } = rawRecord;
+    const { mapName, mapId, jumps, style, completions } = rawRecord;
 
     const allRecords = await this.getAllRecords();
     const allRecordsSorted = this.sortRecordsByTime(allRecords);
 
-    const topForRecord = this.getRecordsMapTop(allRecordsSorted, rawRecord.map, rawRecord.track, rawRecord.style);
+    const topForRecord = this.getRecordsMapTop(allRecordsSorted, mapId, rawRecord.track, rawRecord.style);
     const position = topForRecord.findIndex((record) => record.id === rawRecord.id) + 1;
     const totalPlaces = topForRecord.length;
 
@@ -108,7 +110,7 @@ export class RecordsService {
       {
         totalRecords: totalPlaces,
         position,
-        map,
+        map: mapName,
         style,
       },
     );
@@ -118,7 +120,7 @@ export class RecordsService {
     const [user1, user2] = this.getRecordUsers(rawRecord);
     const [countryCode1, countryCode2] = this.getRecordUsersCountryCodes(rawRecord, countryCodesDictionary);
 
-    const recordDto = convertRawRecordToRecord(rawRecord, position, user1, user2, countryCode1, countryCode2);
+    const recordDto = convertRawRecordToRecord(rawRecord, mapName, position, user1, user2, countryCode1, countryCode2);
 
     const skillRank: RecordSkillRankDTO = {
       points,
@@ -135,8 +137,10 @@ export class RecordsService {
   }
 
   async getMapBestTimes(): Promise<MapBestTimeDTO[]> {
+    const maps = await this.prismaService.map.findMany();
+
     const groupedMapTimes = await this.prismaService.playertime.groupBy({
-      by: ["map", "track", "style"],
+      by: ["mapId", "track", "style"],
       _min: {
         time: true,
       },
@@ -149,6 +153,7 @@ export class RecordsService {
 
         return {
           ...rest,
+          mapName: maps.find((map) => map.id === mapTime.mapId)?.name ?? "",
           time: _min.time,
         };
       })
@@ -167,9 +172,9 @@ export class RecordsService {
     return sortedRecords;
   }
 
-  private getRecordsMapTop(allRecords: Playertime[], map: string, track: number, style: number) {
+  private getRecordsMapTop(allRecords: Playertime[], mapId: number, track: number, style: number) {
     const mapTop = allRecords.filter((record) => {
-      const isSameMap = record.map === map;
+      const isSameMap = record.mapId === mapId;
       const isSameTrack = record.track === track;
       const isSameStyle = record.style === style;
       return isSameMap && isSameTrack && isSameStyle;
@@ -215,13 +220,16 @@ export class RecordsService {
   ) {
     return Prisma.sql`
       SELECT p.*,
+        p.map_id as mapId,
+        m.name as mapName,
         u1.auth as user1_auth, u1.name as user1_name, u1.ip as user1_ip, u1.lastlogin as user1_lastlogin,
         u2.auth as user2_auth, u2.name as user2_name, u2.ip as user2_ip, u2.lastlogin as user2_lastlogin
       FROM playertimes p
       JOIN users u1 ON p.auth = u1.auth
       JOIN users u2 ON p.auth2 = u2.auth
+      JOIN maplist m ON p.map_id = m.id
       WHERE
-        (p.map = ${map} OR ${map} IS NULL)
+        (m.name = ${map} OR ${map} IS NULL)
         AND (p.track = ${track} OR ${track} IS NULL)
         AND (p.style = ${style} OR ${style} IS NULL)
         AND (p.auth = ${authId} OR p.auth2 = ${authId} OR ${authId} IS NULL)
@@ -231,11 +239,14 @@ export class RecordsService {
   private formatGetRawRecordByIdQuery(id: number) {
     return Prisma.sql`
       SELECT p.*,
+        p.map_id as mapId,
+        m.name as mapName,
         u1.auth as user1_auth, u1.name as user1_name, u1.ip as user1_ip, u1.lastlogin as user1_lastlogin,
         u2.auth as user2_auth, u2.name as user2_name, u2.ip as user2_ip, u2.lastlogin as user2_lastlogin
       FROM playertimes p
       JOIN users u1 ON p.auth = u1.auth
       JOIN users u2 ON p.auth2 = u2.auth
+      JOIN maplist m ON p.map_id = m.id
       WHERE p.id = ${id}
     `;
   }

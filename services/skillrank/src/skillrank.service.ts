@@ -114,8 +114,8 @@ export class SkillrankService {
 
     // формирование массивов skillrank по каждой карте и каждому стилю
     maps.forEach((mapObject) => {
-      const mapName = mapObject.map;
-      const mapRecords = records.filter((record) => record.map === mapName);
+      const mapName = mapObject.name;
+      const mapRecords = records.filter((record) => record.mapName === mapName);
       const normalRecords = mapRecords.filter((record) => record.style === StyleCodes.normal);
       const sidewaysRecords = mapRecords.filter((record) => record.style === StyleCodes.sideways);
       const wonlyRecords = mapRecords.filter((record) => record.style === StyleCodes.wonly);

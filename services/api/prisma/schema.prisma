@@ -28,9 +28,9 @@ model User {
 
 model Playertime {
   id          Int    @id @default(autoincrement())
+  mapId       Int    @map("map_id")
   auth        Int?
   auth2       Int?   @default(0)
-  map         String @db.VarChar(128)
   time        Float?
   jumps       Int?
   style       Int    @db.TinyInt
@@ -38,25 +38,27 @@ model Playertime {
   track       Int    @default(0) @db.TinyInt
   completions Int?   @default(0) @db.SmallInt
 
+  map   Map   @relation(name: "PlayertimesMap", fields: [mapId], references: [id], onDelete: Restrict, map: "fk_[playertimes/map_id]_[maplist/id]")
   user1 User? @relation(name: "PlayertimesByUser1", fields: [auth], references: [auth], onDelete: Cascade, map: "fk_[playertimes/auth]_[users/auth]")
   user2 User? @relation(name: "PlayertimesByUser2", fields: [auth2], references: [auth], onDelete: Cascade, map: "fk_[playertimes/auth2]_[users/auth]")
 
-  @@index([map, style, track, time], map: "index_[playertimes/[map/style/track/time]]")
+  @@index([style, track, time], map: "index_[playertimes/[style/track/time]]")
   @@index([time], map: "time")
   @@map("playertimes")
 }
 
 model LogPlayertime {
-  id    Int     @id @default(autoincrement())
+  id    Int    @id @default(autoincrement())
+  mapId Int    @map("map_id")
   auth  Int?
-  auth2 Int?    @default(0)
-  map   String? @db.VarChar(128)
-  track Int?    @db.TinyInt
-  style Int?    @db.TinyInt
+  auth2 Int?   @default(0)
+  track Int?   @db.TinyInt
+  style Int?   @db.TinyInt
   date  Int?
   jumps Int?
   time  Float?
 
+  map   Map   @relation(name: "LogPlayertimesMap", fields: [mapId], references: [id], onDelete: Restrict, map: "fk_[log_playertimes/map_id]_[maplist/id]")
   user1 User? @relation(name: "LogPlayertimesByUser1", fields: [auth], references: [auth], onDelete: Cascade, map: "fk_[log_playertimes/auth]_[users/auth]")
   user2 User? @relation(name: "LogPlayertimesByUser2", fields: [auth2], references: [auth], onDelete: Cascade, map: "fk_[log_playertimes/auth2]_[users/auth]")
 
@@ -76,30 +78,36 @@ model Experience {
 }
 
 model Map {
-  // TODO добавить id
-  map        String @id @db.VarChar(128)
+  id         Int    @id() @default(autoincrement())
+  name       String @unique @db.VarChar(128)
   expPoints  Int    @default(0) @map("exp_points")
   tier       Int    @default(0) @db.TinyInt
   basePoints Int    @default(0) @map("base_points")
+
+  records    Playertime[]    @relation("PlayertimesMap")
+  logRecords LogPlayertime[] @relation("LogPlayertimesMap")
+  zones      Mapzone[]       @relation("MapzonesMap")
 
   @@map("maplist")
 }
 
 model Mapzone {
-  id            Int     @id @default(autoincrement())
-  map           String? @db.VarChar(128)
+  id            Int    @id @default(autoincrement())
+  mapId         Int    @map("map_id")
   type          Int?
-  corner1_x     Float?  @db.Float
-  corner1_y     Float?  @db.Float
-  corner1_z     Float?  @db.Float
-  corner2_x     Float?  @db.Float
-  corner2_y     Float?  @db.Float
-  corner2_z     Float?  @db.Float
-  destination_x Float   @default(0) @db.Float
-  destination_y Float   @default(0) @db.Float
-  destination_z Float   @default(0) @db.Float
-  track         Int     @default(0)
-  flags         Int     @default(0)
+  corner1_x     Float? @db.Float
+  corner1_y     Float? @db.Float
+  corner1_z     Float? @db.Float
+  corner2_x     Float? @db.Float
+  corner2_y     Float? @db.Float
+  corner2_z     Float? @db.Float
+  destination_x Float  @default(0) @db.Float
+  destination_y Float  @default(0) @db.Float
+  destination_z Float  @default(0) @db.Float
+  track         Int    @default(0)
+  flags         Int    @default(0)
+
+  map Map @relation(name: "MapzonesMap", fields: [mapId], references: [id], onDelete: Cascade, map: "fk_[mapzones/map_id]_[maplist/id]")
 
   @@map("mapzones")
 }

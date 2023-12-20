@@ -1,6 +1,7 @@
 import { Playertime } from "@prisma/client";
 
 export type RawRecord = Playertime & {
+  mapName: string;
   user1_auth: number;
   user1_name?: string;
   user1_ip?: number;

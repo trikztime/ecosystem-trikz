@@ -18,7 +18,7 @@ export class MapsService {
   async getMapByName(name: string) {
     const map = await this.prismaService.map.findUnique({
       where: {
-        map: name,
+        name,
       },
     });
 

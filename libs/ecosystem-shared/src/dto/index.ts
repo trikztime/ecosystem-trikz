@@ -1,6 +1,6 @@
 export type RecordDTO = {
   id: number;
-  map: string;
+  mapName: string;
   time: number;
   track: number;
   style: number;
@@ -23,7 +23,8 @@ export type RecordDetailsDTO = RecordDTO & {
 };
 
 export type MapDTO = {
-  map: string;
+  id: number;
+  name: string;
   expPoints: number;
   tier: number;
   basePoints: number;
@@ -38,7 +39,7 @@ export type PlayerDTO = {
 };
 
 export type MapBestTimeDTO = {
-  map: string;
+  mapName: string;
   track: number;
   style: number;
   time: number;
