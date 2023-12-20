@@ -16,7 +16,12 @@ export class MapsService {
   }
 
   async getMapByName(name: string) {
-    const maps = await this.prismaService.map.findMany();
-    return maps.find((map) => map.name.toLowerCase() === name.toLowerCase()) ?? null;
+    const map = await this.prismaService.map.findUnique({
+      where: {
+        name,
+      },
+    });
+
+    return map;
   }
 }
