@@ -28,7 +28,7 @@
     "@nestjs/microservices": "^9.3.9",
     "@nestjs/platform-express": "^9.0.0",
     "@prisma/client": "^4.9.0",
-    "@trikztime/ecosystem-shared": "^1.1.0",
+    "@trikztime/ecosystem-shared": "^2.0.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0"
   },
